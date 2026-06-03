@@ -16,6 +16,7 @@ urlpatterns = [
     path('properties/', include('properties.urls', namespace='properties')),
     path('', home, name='home'),  # الصفحة الرئيسية
     path('reports/', include('reports.urls')),
+    path('developers/', views.developer_list, name='developer_list'),
 
     # تحويل المسار القديم /developers/ إلى المسار الجديد /properties/promoteurs/
     path('developers/', RedirectView.as_view(url='/properties/promoteurs/', permanent=True),
