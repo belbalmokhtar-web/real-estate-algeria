@@ -11,6 +11,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
+    path('properties/', include('properties.urls')),
     path('rewards/', include('rewards.urls')),
     path('properties/', include('properties.urls', namespace='properties')),
     path('', home, name='home'),  # الصفحة الرئيسية
@@ -25,3 +26,6 @@ urlpatterns = [
 if settings.DEBUG:  # ← بدون مسافات إضافية، محاذي تماماً لليسار
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+
+
