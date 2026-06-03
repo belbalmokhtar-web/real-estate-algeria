@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========== الأمان ==========
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-replace-in-production-xyz123')
 DEBUG = False
-ALLOWED_HOSTS = ['belbalmokhtar-web.pythonanywhere.com', 'www.belbalmokhtar-web.pythonanywhere.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'bmokhtar.pythonanywhere.com', 'www.bmokhtar.pythonanywhere.com']
 
 # ========== التطبيقات المثبتة ==========
 INSTALLED_APPS = [
