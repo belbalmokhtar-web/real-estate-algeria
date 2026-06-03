@@ -20,6 +20,7 @@ urlpatterns = [
     path('promoteurs/', views.promoteur_list, name='promoteur_list'),
     path('promoteurs/<int:pk>/', views.promoteur_detail, name='promoteur_detail'),
     path('promoteurs/<int:pk>/contact/', views.contact_promoteur, name='contact_promoteur'),
+    path('developers/', views.developer_list, name='developer_list_global'),
 
     # مشاريع المطورين
     path('projets/<int:pk>/', views.projet_detail, name='projet_detail'),
