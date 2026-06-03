@@ -7,7 +7,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ========== الأمان ==========
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-replace-in-production-xyz123')
 DEBUG = False
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'bmokhtar.pythonanywhere.com']
+
+# تم التعديل: إضافة اسم المستخدم الصحيح
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'bmokhtar.pythonanywhere.com', '.pythonanywhere.com']
+
 # ========== التطبيقات المثبتة ==========
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -17,16 +20,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    # مكتبات خارجية
     'crispy_forms',
     'crispy_bootstrap5',
-    # تطبيقات المشروع
     'accounts',
     'properties',
     'rewards',
     'reports',
 ]
-
 # ========== الوسائط ==========
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,8 +57,6 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 # Context processors الخاصة بالمشروع
                 'properties.context_processors.site_context',
-                # 'properties.context_processors.user_context',  # أضفها عند إنشائها
-                # 'properties.context_processors.notification_context',  # أضفها عند إنشائها
             ],
         },
     },
@@ -67,24 +65,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # ========== قاعدة البيانات ==========
+# تم التعديل: تغيير المسار إلى اسم المستخدم الصحيح
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/home/belbalmokhtar-web/real-estate-algeria/db.sqlite3',
+        'NAME': '/home/bmokhtar/real-estate-algeria/db.sqlite3',
     }
 }
-
-# للإنتاج: PostgreSQL (ملاحظ محذوف)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.environ.get('DB_NAME', 'real_estate'),
-#         'USER': os.environ.get('DB_USER', 'postgres'),
-#         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-#         'HOST': os.environ.get('DB_HOST', 'localhost'),
-#         'PORT': os.environ.get('DB_PORT', '5432'),
-#     }
-# }
 
 # ========== التحقق من كلمات المرور ==========
 AUTH_PASSWORD_VALIDATORS = [
@@ -112,21 +99,15 @@ LOGOUT_REDIRECT_URL = '/'
 # ========== البريد الإلكتروني ==========
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# إعدادات البريد الإلكتروني للإنتاج (ملاحظة محذوفة)
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-
 # ========== الملفات الثابتة والوسائط ==========
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = '/home/belbalmokhtar-web/real-estate-algeria/staticfiles'
+# تم التعديل: تغيير المسار إلى اسم المستخدم الصحيح
+STATIC_ROOT = '/home/bmokhtar/real-estate-algeria/staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/belbalmokhtar-web/real-estate-algeria/media'
+# تم التعديل: تغيير المسار إلى اسم المستخدم الصحيح
+MEDIA_ROOT = '/home/bmokhtar/real-estate-algeria/media'
 
 # ========== الإعدادات الافتراضية ==========
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -148,12 +129,13 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000  # 1 سنة
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_PRELOAD = True
+    # تم تعطيل HSTS و SSL Redirect مؤقتاً للتجربة
+    # SECURE_HSTS_SECONDS = 31536000  # 1 سنة
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_SSL_REDIRECT = True
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
+    # SECURE_HSTS_PRELOAD = True
 
 # ========== إعدادات التطبيق المخصصة ==========
 SITE_NAME = 'عقاري'
@@ -208,15 +190,13 @@ LOGGING = {
 
 # إضافة تسجيل الملف في وضع الإنتاج
 if not DEBUG:
-    import os
-
     LOG_DIR = BASE_DIR / 'logs'
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
 
     LOGGING['handlers']['file'] = {
         'class': 'logging.handlers.RotatingFileHandler',
-        'filename': LOG_DIR / 'django.log',
+        'filename': str(LOG_DIR / 'django.log'),
         'maxBytes': 1024 * 1024 * 5,  # 5 MB
         'backupCount': 5,
         'formatter': 'verbose',
