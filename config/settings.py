@@ -71,7 +71,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': '/home/belbalmokhtar-web/real-estate-algeria/db.sqlite3',
     }
 }
 
@@ -124,10 +124,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # ========== الملفات الثابتة والوسائط ==========
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = '/home/belbalmokhtar-web/real-estate-algeria/staticfiles'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = '/home/belbalmokhtar-web/real-estate-algeria/media'
 
 # ========== الإعدادات الافتراضية ==========
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
