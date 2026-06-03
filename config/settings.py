@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ========== الأمان ==========
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-replace-in-production-xyz123')
-DEBUG = False
+DEBUG = True
 
 # تم التعديل: إضافة اسم المستخدم الصحيح
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'bmokhtar.pythonanywhere.com', '.pythonanywhere.com']
