@@ -1,0 +1,544 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}قائمة العقارات | عقارات الجزائر{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<style>
+    /* ========== متغيرات متطورة ========== */
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --primary-light: #FFF0E8;
+        --primary-glow: rgba(255,107,53,0.2);
+        --secondary: #1A2C3E;
+        --secondary-light: #2D4A6E;
+        --accent: #00C9A7;
+        --accent-glow: rgba(0,201,167,0.15);
+        --gray-bg: #F9FAFB;
+        --white: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-muted: #64748B;
+        --border-light: #E2E8F0;
+        --card-shadow: 0 20px 35px -12px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.02);
+        --hover-shadow: 0 25px 40px -12px rgba(0,0,0,0.15);
+        --border-radius-card: 28px;
+        --border-radius-input: 20px;
+        --transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    body {
+        background: linear-gradient(145deg, #F1F5F9 0%, #E2E8F0 100%);
+        font-family: 'Inter', 'Tajawal', sans-serif;
+        overflow-x: hidden;
+    }
+    /* خلفية ديناميكية */
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: floatOrb 25s infinite alternate;
+    }
+    .orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--primary), transparent); top: -20%; right: -20%; }
+    .orb-2 { width: 40vw; height: 40vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -10%; left: -10%; animation-duration: 30s; }
+    .orb-3 { width: 30vw; height: 30vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 30%; left: 20%; animation-duration: 22s; opacity: 0.3; }
+    @keyframes floatOrb {
+        0% { transform: translate(0,0) scale(1); }
+        100% { transform: translate(3%,3%) scale(1.08); }
+    }
+    .grid-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    /* شريط الفلترة الجانبي */
+    .filter-sidebar {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: 32px;
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        position: sticky;
+        top: 90px;
+    }
+    .filter-sidebar:hover {
+        box-shadow: var(--hover-shadow);
+        transform: translateY(-3px);
+    }
+    .filter-header {
+        background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+        border-radius: 32px 32px 0 0;
+        padding: 1rem 1.2rem;
+        color: white;
+    }
+    .filter-header h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+    .filter-body {
+        padding: 1.2rem;
+    }
+    .filter-body .form-label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--secondary);
+        margin-bottom: 0.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .filter-body .form-label i {
+        color: var(--primary);
+    }
+    .filter-body .form-control,
+    .filter-body .form-select {
+        border-radius: 40px;
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border-light);
+        transition: var(--transition);
+        background: white;
+    }
+    .filter-body .form-control:focus,
+    .filter-body .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .btn-filter {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border: none;
+        border-radius: 40px;
+        padding: 0.6rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: white;
+        width: 100%;
+    }
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px var(--primary-glow);
+    }
+    .btn-reset {
+        background: transparent;
+        border: 1px solid var(--border-light);
+        border-radius: 40px;
+        padding: 0.6rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: var(--text-muted);
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    .btn-reset:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+    /* بطاقات العقارات */
+    .property-card {
+        background: white;
+        border-radius: var(--border-radius-card);
+        overflow: hidden;
+        transition: var(--transition);
+        box-shadow: var(--card-shadow);
+        border: 1px solid transparent;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .property-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+        border-color: var(--primary-light);
+    }
+    .property-img {
+        height: 200px;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+    .property-card:hover .property-img {
+        transform: scale(1.05);
+    }
+    .img-placeholder {
+        height: 200px;
+        background: linear-gradient(135deg, #E2E8F0, #CBD5E1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .property-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+    }
+    .price-tag {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin: 0.5rem 0;
+    }
+    .property-features {
+        display: flex;
+        gap: 0.8rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin: 0.5rem 0;
+    }
+    .btn-detail {
+        background: transparent;
+        border: 1px solid var(--primary);
+        border-radius: 40px;
+        padding: 0.3rem 1rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: var(--primary);
+        width: 100%;
+    }
+    .btn-detail:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+    /* الترقيم */
+    .pagination-custom {
+        display: flex;
+        justify-content: center;
+        gap: 0.3rem;
+        margin: 2rem 0;
+    }
+    .pagination-custom .page-item .page-link {
+        border-radius: 40px;
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border-light);
+        color: var(--secondary);
+        transition: var(--transition);
+        background: white;
+    }
+    .pagination-custom .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-color: transparent;
+        color: white;
+    }
+    .pagination-custom .page-item .page-link:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+    /* مؤشر التحميل */
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.6s linear infinite;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    /* الوضع الليلي */
+    body.dark-mode .filter-sidebar,
+    body.dark-mode .property-card {
+        background: #1E293B;
+        border-color: #334155;
+    }
+    body.dark-mode .filter-header {
+        background: #334155;
+    }
+    body.dark-mode .filter-body .form-label {
+        color: #F1F5F9;
+    }
+    body.dark-mode .filter-body .form-control,
+    body.dark-mode .filter-body .form-select {
+        background: #0F172A;
+        border-color: #334155;
+        color: #F1F5F9;
+    }
+    body.dark-mode .btn-reset {
+        color: #CBD5E1;
+        border-color: #475569;
+    }
+    body.dark-mode .btn-reset:hover {
+        background: #334155;
+        color: var(--primary);
+    }
+    body.dark-mode .property-features {
+        color: #94A3B8;
+    }
+    /* تحسينات التجاوب */
+    @media (max-width: 768px) {
+        .filter-sidebar {
+            position: relative;
+            top: 0;
+            margin-bottom: 1.5rem;
+        }
+        .property-img,
+        .img-placeholder {
+            height: 180px;
+        }
+        .price-tag {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animated-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+</div>
+
+<div class="container my-4">
+    <div class="row g-4">
+        <!-- شريط الفلترة الجانبي -->
+        <div class="col-lg-3" data-aos="fade-left">
+            <div class="filter-sidebar">
+                <div class="filter-header">
+                    <h5><i class="bi bi-funnel-fill"></i> فلترة البحث</h5>
+                </div>
+                <div class="filter-body">
+                    <form method="get" id="filterForm">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-search"></i> كلمة البحث</label>
+                            <input type="text" name="q" class="form-control" value="{{ current_filters.q|default:'' }}" placeholder="عنوان، وصف، مدينة...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-house-door"></i> نوع العقار</label>
+                            <select name="property_type" class="form-select">
+                                <option value="">الكل</option>
+                                {% for value, label in property_types %}
+                                <option value="{{ value }}" {% if current_filters.property_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-tag"></i> نوع العملية</label>
+                            <select name="listing_type" class="form-select">
+                                <option value="">الكل</option>
+                                {% for value, label in listing_types %}
+                                <option value="{{ value }}" {% if current_filters.listing_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-geo-alt"></i> الولاية</label>
+                            <select name="wilaya" id="wilayaSelect" class="form-select">
+                                <option value="">الكل</option>
+                                {% for wilaya in wilayas %}
+                                <option value="{{ wilaya.name_ar }}" {% if current_filters.wilaya == wilaya.name_ar %}selected{% endif %}>{{ wilaya.name_ar }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-pin-map"></i> البلدية</label>
+                            <select name="commune" id="communeSelect" class="form-select" {% if not current_filters.wilaya %}disabled{% endif %}>
+                                <option value="">الكل</option>
+                                {% for commune in communes %}
+                                <option value="{{ commune.name_ar }}" {% if current_filters.commune == commune.name_ar %}selected{% endif %}>{{ commune.name_ar }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-cash-stack"></i> السعر (دج)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="form-control" placeholder="من" value="{{ current_filters.min_price|default:'' }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="form-control" placeholder="إلى" value="{{ current_filters.max_price|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-rulers"></i> المساحة (م²)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_area" class="form-control" placeholder="من" value="{{ current_filters.min_area|default:'' }}">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_area" class="form-control" placeholder="إلى" value="{{ current_filters.max_area|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-sort-down"></i> ترتيب حسب</label>
+                            <select name="sort" class="form-select">
+                                <option value="-created_at" {% if current_filters.sort == '-created_at' %}selected{% endif %}>الأحدث</option>
+                                <option value="price_asc" {% if current_filters.sort == 'price_asc' %}selected{% endif %}>السعر: من الأقل</option>
+                                <option value="price_desc" {% if current_filters.sort == 'price_desc' %}selected{% endif %}>السعر: من الأعلى</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-filter" id="filterSubmitBtn"><i class="bi bi-funnel"></i> تطبيق الفلترة</button>
+                        <a href="{% url 'properties:property_list' %}" class="btn-reset"><i class="bi bi-arrow-repeat"></i> إعادة ضبط</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة العقارات -->
+        <div class="col-lg-9">
+            <!-- عدد النتائج -->
+            <div class="d-flex justify-content-between align-items-center mb-3" data-aos="fade-right">
+                <h5 class="fw-bold"><i class="bi bi-building"></i> العقارات <span class="badge bg-primary rounded-pill">{{ properties.paginator.count }}</span></h5>
+                <div class="text-muted small">نتائج {{ properties.start_index }}-{{ properties.end_index }} من {{ properties.paginator.count }}</div>
+            </div>
+
+            <div class="row g-4">
+                {% for property in properties %}
+                <div class="col-md-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+                    <div class="property-card h-100">
+                        <div class="position-relative">
+                            {% if property.image %}
+                            <img src="{{ property.image.url }}" class="property-img" alt="{{ property.title }}" loading="lazy">
+                            {% else %}
+                            <div class="img-placeholder">
+                                <i class="bi bi-building fs-1 text-muted"></i>
+                            </div>
+                            {% endif %}
+                            <div class="property-badge">
+                                {% if property.is_featured %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> مميز</span>
+                                {% endif %}
+                                {% if property.is_cpc_active %}
+                                <span class="badge bg-info"><i class="bi bi-coin"></i> مدفوع</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <h5 class="card-title fw-bold">{{ property.title|truncatechars:35 }}</h5>
+                            <div class="text-muted small mb-2"><i class="bi bi-geo-alt"></i> {{ property.wilaya|default:"الجزائر" }}, {{ property.commune|default:"المركز" }}</div>
+                            <div class="price-tag">{{ property.price|floatformat:0 }} <small>دج</small></div>
+                            <div class="property-features">
+                                <span><i class="bi bi-rulers"></i> {{ property.area_sqm }} م²</span>
+                                <span><i class="bi bi-door-closed"></i> {{ property.bedrooms|default:"0" }}</span>
+                                <span><i class="bi bi-droplet"></i> {{ property.bathrooms|default:"0" }}</span>
+                            </div>
+                            <div class="mt-2 mb-2">
+                                <span class="badge bg-secondary">{{ property.get_property_type_display }}</span>
+                                {% if property.listing_type == 'sale' %}
+                                <span class="badge bg-success">للبيع</span>
+                                {% else %}
+                                <span class="badge bg-info">للإيجار</span>
+                                {% endif %}
+                            </div>
+                            <div class="mt-auto">
+                                <a href="{% url 'properties:property_detail' property.id %}" class="btn-detail">
+                                    <i class="bi bi-eye"></i> تفاصيل
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center py-5">
+                        <i class="bi bi-building-slash fs-1"></i>
+                        <p class="mt-2">لا توجد عقارات متاحة حالياً. <a href="{% url 'properties:property_create' %}" class="alert-link">أضف عقاراً الآن</a></p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- الترقيم -->
+            {% if properties.has_other_pages %}
+            <div class="pagination-custom mt-4">
+                {% if properties.has_previous %}
+                <a class="page-item page-link" href="?page=1&{{ request.GET.urlencode }}">« الأولى</a>
+                <a class="page-item page-link" href="?page={{ properties.previous_page_number }}&{{ request.GET.urlencode }}">‹ السابقة</a>
+                {% endif %}
+                <span class="page-item active"><span class="page-link">{{ properties.number }}</span></span>
+                {% if properties.has_next %}
+                <a class="page-item page-link" href="?page={{ properties.next_page_number }}&{{ request.GET.urlencode }}">التالي ›</a>
+                <a class="page-item page-link" href="?page={{ properties.paginator.num_pages }}&{{ request.GET.urlencode }}">الأخيرة »</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({ duration: 700, once: true, offset: 50 });
+
+        // ربط البلديات بالولاية ديناميكياً (AJAX)
+        const wilayaSelect = document.getElementById('wilayaSelect');
+        const communeSelect = document.getElementById('communeSelect');
+
+        function loadCommunes() {
+            const wilayaName = wilayaSelect.value;
+            if (!wilayaName) {
+                communeSelect.innerHTML = '<option value="">الكل</option>';
+                communeSelect.disabled = true;
+                return;
+            }
+            communeSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+            communeSelect.disabled = true;
+
+            fetch(`/properties/get-communes-by-name/?wilaya_name=${encodeURIComponent(wilayaName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    communeSelect.innerHTML = '<option value="">الكل</option>';
+                    data.forEach(commune => {
+                        const option = document.createElement('option');
+                        option.value = commune.name_ar;
+                        option.textContent = commune.name_ar;
+                        communeSelect.appendChild(option);
+                    });
+                    communeSelect.disabled = false;
+                    // استعادة القيمة المحددة سابقاً (إن وجدت)
+                    const preselectedCommune = '{{ current_filters.commune|default:"" }}';
+                    if (preselectedCommune) {
+                        communeSelect.value = preselectedCommune;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading communes:', error);
+                    communeSelect.innerHTML = '<option value="">خطأ في التحميل</option>';
+                    communeSelect.disabled = false;
+                });
+        }
+
+        if (wilayaSelect && communeSelect) {
+            wilayaSelect.addEventListener('change', loadCommunes);
+            if (wilayaSelect.value) {
+                loadCommunes();
+            }
+        }
+
+        // تحسين تجربة المستخدم: إظهار مؤشر تحميل عند إرسال الفلترة
+        const filterForm = document.getElementById('filterForm');
+        const filterSubmitBtn = document.getElementById('filterSubmitBtn');
+        if (filterForm && filterSubmitBtn) {
+            filterForm.addEventListener('submit', function() {
+                filterSubmitBtn.innerHTML = '<span class="loading-spinner"></span> جاري البحث...';
+                filterSubmitBtn.disabled = true;
+            });
+        }
+    });
+</script>
+{% endblock %}

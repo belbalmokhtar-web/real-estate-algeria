@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}لوحة التحليلات{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="bi bi-bar-chart-steps"></i> لوحة التحليلات والإحصائيات</h2>
+
+    <!-- بطاقات الإحصائيات -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body">
+                    <h5 class="card-title">العقارات النشطة</h5>
+                    <p class="display-6">{{ total_properties }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي المستخدمين</h5>
+                    <p class="display-6">{{ total_users }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning h-100">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي النقرات</h5>
+                    <p class="display-6">{{ total_clicks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title">النقرات الصالحة</h5>
+                    <p class="display-6">{{ valid_clicks }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">النقاط الموزعة</div>
+                <div class="card-body text-center">
+                    <h3>{{ total_points }} نقطة</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">إجمالي الإنفاق الإعلاني</div>
+                <div class="card-body text-center">
+                    <h3>{{ total_ad_spent }} $</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- رسم بياني للنقرات حسب الشهر -->
+    <div class="card mb-4">
+        <div class="card-header">اتجاه النقرات (آخر 12 شهراً)</div>
+        <div class="card-body">
+            <canvas id="clicksChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- أكثر العقارات جذباً للنقرات -->
+    <div class="card mb-4">
+        <div class="card-header">أكثر العقارات جذباً للنقرات</div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>العقار</th>
+                        <th>عدد النقرات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in clicks_by_property %}
+                    <tr>
+                        <td>{{ item.property__title|default:"غير محدد" }}</td>
+                        <td>{{ item.clicks }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2">لا توجد بيانات كافية.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- أحدث النقرات -->
+    <div class="card">
+        <div class="card-header">أحدث النقرات</div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>الرابط الترويجي</th>
+                        <th>المروج</th>
+                        <th>التاريخ</th>
+                        <th>صالح</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for click in recent_clicks %}
+                    <tr>
+                        <td>{{ click.affiliate_link.property.title|truncatechars:30 }}</td>
+                        <td>{{ click.affiliate_link.promoter.user.username }}</td>
+                        <td>{{ click.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{% if click.is_valid %}<span class="badge bg-success">نعم</span>{% else %}<span class="badge bg-danger">لا</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">لا توجد نقرات مسجلة بعد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ctx = document.getElementById('clicksChart').getContext('2d');
+    const months = {{ months|safe }};
+    const clicksData = {{ clicks_data|safe }};
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'عدد النقرات',
+                data: clicksData,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } }
+        }
+    });
+</script>
+{% endblock %}

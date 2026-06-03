@@ -1,0 +1,524 @@
+[
+  {
+    "model": "properties.wilaya",
+    "pk": 1,
+    "fields": {
+      "code": "01",
+      "name_ar": "أدرار",
+      "name_fr": "Adrar"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 2,
+    "fields": {
+      "code": "02",
+      "name_ar": "الشلف",
+      "name_fr": "Chlef"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 3,
+    "fields": {
+      "code": "03",
+      "name_ar": "الأغواط",
+      "name_fr": "Laghouat"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 4,
+    "fields": {
+      "code": "04",
+      "name_ar": "أم البواقي",
+      "name_fr": "Oum El Bouaghi"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 5,
+    "fields": {
+      "code": "05",
+      "name_ar": "باتنة",
+      "name_fr": "Batna"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 6,
+    "fields": {
+      "code": "06",
+      "name_ar": "بجاية",
+      "name_fr": "Béjaïa"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 7,
+    "fields": {
+      "code": "07",
+      "name_ar": "بسكرة",
+      "name_fr": "Biskra"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 8,
+    "fields": {
+      "code": "08",
+      "name_ar": "بشار",
+      "name_fr": "Béchar"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 9,
+    "fields": {
+      "code": "09",
+      "name_ar": "البليدة",
+      "name_fr": "Blida"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 10,
+    "fields": {
+      "code": "10",
+      "name_ar": "البويرة",
+      "name_fr": "Bouira"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 11,
+    "fields": {
+      "code": "11",
+      "name_ar": "تمنراست",
+      "name_fr": "Tamanrasset"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 12,
+    "fields": {
+      "code": "12",
+      "name_ar": "تبسة",
+      "name_fr": "Tébessa"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 13,
+    "fields": {
+      "code": "13",
+      "name_ar": "تلمسان",
+      "name_fr": "Tlemcen"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 14,
+    "fields": {
+      "code": "14",
+      "name_ar": "تيارت",
+      "name_fr": "Tiaret"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 15,
+    "fields": {
+      "code": "15",
+      "name_ar": "تيزي وزو",
+      "name_fr": "Tizi Ouzou"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 16,
+    "fields": {
+      "code": "16",
+      "name_ar": "الجزائر",
+      "name_fr": "Alger"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 17,
+    "fields": {
+      "code": "17",
+      "name_ar": "الجلفة",
+      "name_fr": "Djelfa"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 18,
+    "fields": {
+      "code": "18",
+      "name_ar": "جيجل",
+      "name_fr": "Jijel"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 19,
+    "fields": {
+      "code": "19",
+      "name_ar": "سطيف",
+      "name_fr": "Sétif"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 20,
+    "fields": {
+      "code": "20",
+      "name_ar": "سعيدة",
+      "name_fr": "Saïda"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 21,
+    "fields": {
+      "code": "21",
+      "name_ar": "سكيكدة",
+      "name_fr": "Skikda"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 22,
+    "fields": {
+      "code": "22",
+      "name_ar": "سيدي بلعباس",
+      "name_fr": "Sidi Bel Abbès"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 23,
+    "fields": {
+      "code": "23",
+      "name_ar": "عنابة",
+      "name_fr": "Annaba"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 24,
+    "fields": {
+      "code": "24",
+      "name_ar": "قالمة",
+      "name_fr": "Guelma"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 25,
+    "fields": {
+      "code": "25",
+      "name_ar": "قسنطينة",
+      "name_fr": "Constantine"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 26,
+    "fields": {
+      "code": "26",
+      "name_ar": "المدية",
+      "name_fr": "Médéa"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 27,
+    "fields": {
+      "code": "27",
+      "name_ar": "مستغانم",
+      "name_fr": "Mostaganem"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 28,
+    "fields": {
+      "code": "28",
+      "name_ar": "المسيلة",
+      "name_fr": "M'Sila"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 29,
+    "fields": {
+      "code": "29",
+      "name_ar": "معسكر",
+      "name_fr": "Mascara"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 30,
+    "fields": {
+      "code": "30",
+      "name_ar": "ورقلة",
+      "name_fr": "Ouargla"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 31,
+    "fields": {
+      "code": "31",
+      "name_ar": "وهران",
+      "name_fr": "Oran"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 32,
+    "fields": {
+      "code": "32",
+      "name_ar": "البيض",
+      "name_fr": "El Bayadh"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 33,
+    "fields": {
+      "code": "33",
+      "name_ar": "إليزي",
+      "name_fr": "Illizi"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 34,
+    "fields": {
+      "code": "34",
+      "name_ar": "برج بوعريريج",
+      "name_fr": "Bordj Bou Arréridj"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 35,
+    "fields": {
+      "code": "35",
+      "name_ar": "بومرداس",
+      "name_fr": "Boumerdès"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 36,
+    "fields": {
+      "code": "36",
+      "name_ar": "الطارف",
+      "name_fr": "El Tarf"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 37,
+    "fields": {
+      "code": "37",
+      "name_ar": "تندوف",
+      "name_fr": "Tindouf"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 38,
+    "fields": {
+      "code": "38",
+      "name_ar": "تيسمسيلت",
+      "name_fr": "Tissemsilt"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 39,
+    "fields": {
+      "code": "39",
+      "name_ar": "الوادي",
+      "name_fr": "El Oued"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 40,
+    "fields": {
+      "code": "40",
+      "name_ar": "خنشلة",
+      "name_fr": "Khenchela"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 41,
+    "fields": {
+      "code": "41",
+      "name_ar": "سوق أهراس",
+      "name_fr": "Souk Ahras"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 42,
+    "fields": {
+      "code": "42",
+      "name_ar": "تيبازة",
+      "name_fr": "Tipaza"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 43,
+    "fields": {
+      "code": "43",
+      "name_ar": "ميلة",
+      "name_fr": "Mila"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 44,
+    "fields": {
+      "code": "44",
+      "name_ar": "عين الدفلى",
+      "name_fr": "Aïn Defla"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 45,
+    "fields": {
+      "code": "45",
+      "name_ar": "النعامة",
+      "name_fr": "Naâma"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 46,
+    "fields": {
+      "code": "46",
+      "name_ar": "عين تيموشنت",
+      "name_fr": "Aïn Témouchent"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 47,
+    "fields": {
+      "code": "47",
+      "name_ar": "غرداية",
+      "name_fr": "Ghardaïa"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 48,
+    "fields": {
+      "code": "48",
+      "name_ar": "غليزان",
+      "name_fr": "Relizane"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 49,
+    "fields": {
+      "code": "49",
+      "name_ar": "تيميمون",
+      "name_fr": "Timimoun"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 50,
+    "fields": {
+      "code": "50",
+      "name_ar": "برج باجي مختار",
+      "name_fr": "Bordj Badji Mokhtar"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 51,
+    "fields": {
+      "code": "51",
+      "name_ar": "أولاد جلال",
+      "name_fr": "Ouled Djellal"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 52,
+    "fields": {
+      "code": "52",
+      "name_ar": "بني عباس",
+      "name_fr": "Béni Abbès"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 53,
+    "fields": {
+      "code": "53",
+      "name_ar": "عين صالح",
+      "name_fr": "In Salah"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 54,
+    "fields": {
+      "code": "54",
+      "name_ar": "عين قزام",
+      "name_fr": "In Guezzam"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 55,
+    "fields": {
+      "code": "55",
+      "name_ar": "تقرت",
+      "name_fr": "Touggourt"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 56,
+    "fields": {
+      "code": "56",
+      "name_ar": "جانت",
+      "name_fr": "Djanet"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 57,
+    "fields": {
+      "code": "57",
+      "name_ar": "المغير",
+      "name_fr": "El Meghaier"
+    }
+  },
+  {
+    "model": "properties.wilaya",
+    "pk": 58,
+    "fields": {
+      "code": "58",
+      "name_ar": "المنيعة",
+      "name_fr": "El Menia"
+    }
+  }
+]

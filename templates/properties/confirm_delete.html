@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}تأكيد الحذف{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-danger">
+        <h4>هل أنت متأكد من حذف "{{ property.title }}"؟</h4>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">نعم، حذف</button>
+            <a href="{% url 'properties:property_detail' property.id %}" class="btn btn-secondary">إلغاء</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

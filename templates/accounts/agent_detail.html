@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ agent.get_full_name|default:agent.username }} | وكيل عقاري معتمد{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    :root {
+        --pf-primary: #0a2b4e;
+        --pf-accent: #f5a623;
+        --pf-accent-dark: #e69500;
+        --pf-gray-bg: #f8fafc;
+    }
+    .agent-header {
+        background: linear-gradient(135deg, var(--pf-primary), #1e4a76);
+        border-radius: 30px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .agent-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--pf-accent);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .agent-info-card {
+        background: white;
+        border-radius: 24px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--pf-accent);
+    }
+    .listing-card {
+        transition: transform 0.3s;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        background: white;
+        height: 100%;
+    }
+    .listing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    .listing-image {
+        height: 180px;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .listing-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .listing-body {
+        padding: 1rem;
+    }
+    .price {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--pf-accent);
+    }
+    .btn-accent {
+        background: var(--pf-accent);
+        color: white;
+        border-radius: 40px;
+        padding: 0.5rem 1.5rem;
+        transition: 0.2s;
+    }
+    .btn-accent:hover {
+        background: var(--pf-accent-dark);
+        color: white;
+    }
+    .social-links a {
+        display: inline-block;
+        width: 36px;
+        height: 36px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        text-align: center;
+        line-height: 36px;
+        color: white;
+        margin-left: 0.5rem;
+        transition: 0.2s;
+    }
+    .social-links a:hover {
+        background: var(--pf-accent);
+        transform: translateY(-2px);
+    }
+    @media (max-width: 768px) {
+        .agent-header { padding: 1rem; text-align: center; }
+        .agent-avatar { width: 100px; height: 100px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- رأس الصفحة -->
+    <div class="agent-header">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center text-md-start">
+                {% if agent.avatar %}
+                    <img src="{{ agent.avatar.url }}" class="agent-avatar" alt="{{ agent.username }}">
+                {% else %}
+                    <div class="agent-avatar bg-secondary d-flex align-items-center justify-content-center mx-auto mx-md-0">
+                        <i class="fas fa-user fa-3x text-white"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-9 text-center text-md-start">
+                <h1 class="fw-bold">{{ agent.get_full_name|default:agent.username }}</h1>
+                {% if agent.company %}
+                    <p class="mb-2"><i class="fas fa-building"></i> {{ agent.company }}</p>
+                {% endif %}
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start mt-3">
+                    {% if agent.phone %}
+                        <span><i class="fas fa-phone"></i> {{ agent.phone }}</span>
+                    {% endif %}
+                    {% if agent.email %}
+                        <span><i class="fas fa-envelope"></i> {{ agent.email }}</span>
+                    {% endif %}
+                    {% if agent_profile.license_number %}
+                        <span><i class="fas fa-id-card"></i> رخصة: {{ agent_profile.license_number }}</span>
+                    {% endif %}
+                </div>
+                {% if agent_profile.facebook or agent_profile.instagram or agent_profile.linkedin %}
+                <div class="social-links mt-3">
+                    {% if agent_profile.facebook %}
+                        <a href="{{ agent_profile.facebook }}" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    {% endif %}
+                    {% if agent_profile.instagram %}
+                        <a href="{{ agent_profile.instagram }}" target="_blank"><i class="fab fa-instagram"></i></a>
+                    {% endif %}
+                    {% if agent_profile.linkedin %}
+                        <a href="{{ agent_profile.linkedin }}" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- العمود الأيمن: معلومات وإحصائيات -->
+        <div class="col-lg-4">
+            <div class="agent-info-card">
+                <h4><i class="fas fa-chart-line"></i> إحصائيات</h4>
+                <div class="row text-center mt-3">
+                    <div class="col-6">
+                        <div class="stat-number">{{ total_properties }}</div>
+                        <div>عقار معروض</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-number">{{ total_views }}</div>
+                        <div>مشاهدة</div>
+                    </div>
+                </div>
+                {% if agent_profile.years_experience %}
+                <hr>
+                <div class="text-center">
+                    <div class="stat-number">{{ agent_profile.years_experience }}</div>
+                    <div>سنوات الخبرة</div>
+                </div>
+                {% endif %}
+                <hr>
+                <h4><i class="fas fa-info-circle"></i> عن الوكيل</h4>
+                <p>{{ agent.bio|default:"لا توجد سيرة ذاتية متاحة حالياً."|linebreaks }}</p>
+                <div>
+                    {% if agent.is_active %}
+                        <span class="badge bg-success">نشط</span>
+                    {% else %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                    {% endif %}
+                    {% if agent_profile.agency_name %}
+                        <span class="badge bg-info ms-2">{{ agent_profile.agency_name }}</span>
+                    {% endif %}
+                </div>
+                <hr>
+                <a href="{% url 'accounts:compose_message' agent.id %}" class="btn btn-accent w-100 mt-2">
+                    <i class="fas fa-envelope"></i> أرسل رسالة
+                </a>
+            </div>
+        </div>
+
+        <!-- العمود الأيسر: قائمة العقارات -->
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h3><i class="fas fa-home"></i> عقارات الوكيل ({{ total_properties }})</h3>
+                <div>
+                    <select id="filter-type" class="form-select w-auto" onchange="window.location.href='?listing_type='+this.value">
+                        <option value="">جميع العمليات</option>
+                        <option value="vente" {% if listing_type == 'vente' %}selected{% endif %}>للبيع</option>
+                        <option value="location" {% if listing_type == 'location' %}selected{% endif %}>للإيجار</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if properties %}
+                <div class="row g-4">
+                    {% for prop in properties %}
+                    <div class="col-md-6">
+                        <div class="listing-card">
+                            <div class="listing-image">
+                                {% if prop.image %}
+                                    <img src="{{ prop.image.url }}" alt="{{ prop.title }}">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100">
+                                        <i class="fas fa-building fa-3x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="listing-body">
+                                <h5 class="fw-bold">{{ prop.title|truncatechars:35 }}</h5>
+                                <div class="price">{{ prop.price|floatformat:0 }} دج</div>
+                                <div class="text-muted small mt-1">
+                                    <i class="fas fa-map-marker-alt"></i> {{ prop.wilaya|default:"" }}
+                                    {% if prop.commune %}, {{ prop.commune }}{% endif %}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="badge bg-secondary">{{ prop.get_listing_type_display }}</span>
+                                    <a href="{% url 'properties:property_detail' prop.id %}" class="btn btn-accent btn-sm">تفاصيل</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- ترقيم الصفحات إذا أردت -->
+                {% if properties.has_other_pages %}
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if properties.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ properties.previous_page_number }}{% if listing_type %}&listing_type={{ listing_type }}{% endif %}">السابق</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ properties.number }}</span></li>
+                        {% if properties.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ properties.next_page_number }}{% if listing_type %}&listing_type={{ listing_type }}{% endif %}">التالي</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info text-center">لا توجد عقارات مسجلة لهذا الوكيل حالياً.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}

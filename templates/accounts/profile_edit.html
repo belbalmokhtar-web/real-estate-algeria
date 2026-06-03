@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تعديل الملف الشخصي | عقارات الجزائر{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<style>
+    /* ========== متغيرات عصرية ومتناسقة ========== */
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --primary-light: #FFF0E8;
+        --primary-glow: rgba(255,107,53,0.2);
+        --secondary: #1A2C3E;
+        --secondary-light: #2D4A6E;
+        --accent: #00C9A7;
+        --accent-glow: rgba(0,201,167,0.15);
+        --gray-bg: #F9FAFB;
+        --white: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-muted: #64748B;
+        --border-light: #E2E8F0;
+        --card-shadow: 0 20px 35px -12px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.02);
+        --hover-shadow: 0 25px 40px -12px rgba(0,0,0,0.15);
+        --border-radius-card: 32px;
+        --border-radius-input: 20px;
+        --transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    body {
+        background: linear-gradient(145deg, #F1F5F9 0%, #E2E8F0 100%);
+        font-family: 'Inter', 'Tajawal', sans-serif;
+    }
+    /* خلفية ديناميكية */
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: floatOrb 25s infinite alternate;
+    }
+    .orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--primary), transparent); top: -20%; right: -20%; }
+    .orb-2 { width: 40vw; height: 40vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -10%; left: -10%; animation-duration: 30s; }
+    .orb-3 { width: 30vw; height: 30vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 30%; left: 20%; animation-duration: 22s; opacity: 0.3; }
+    @keyframes floatOrb {
+        0% { transform: translate(0,0) scale(1); }
+        100% { transform: translate(3%,3%) scale(1.08); }
+    }
+    .grid-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    /* هيدر الصفحة */
+    .page-header {
+        background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        padding: 2rem 1rem;
+        border-radius: 0 0 48px 48px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+    }
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        animation: rotate 20s infinite linear;
+    }
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .page-header h1 {
+        font-weight: 800;
+        font-size: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+    .page-header p {
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+    /* بطاقة التعديل */
+    .edit-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: var(--border-radius-card);
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        transition: var(--transition);
+        animation: fadeInUp 0.6s ease-out;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .edit-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--hover-shadow);
+    }
+    .card-header-custom {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        padding: 1.2rem 1.5rem;
+        border-bottom: none;
+    }
+    .card-header-custom h4 {
+        margin: 0;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .card-header-custom i {
+        font-size: 1.4rem;
+    }
+    .card-body-custom {
+        padding: 2rem;
+    }
+    /* تنسيق النموذج */
+    .form-group-custom {
+        margin-bottom: 1.5rem;
+    }
+    .form-group-custom label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .form-group-custom label i {
+        color: var(--primary);
+    }
+    .form-group-custom input,
+    .form-group-custom select,
+    .form-group-custom textarea {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border-radius: var(--border-radius-input);
+        border: 1px solid var(--border-light);
+        background: var(--white);
+        transition: var(--transition);
+        font-size: 0.95rem;
+    }
+    .form-group-custom input:focus,
+    .form-group-custom select:focus,
+    .form-group-custom textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-glow);
+        outline: none;
+    }
+    /* معاينة الصورة */
+    .avatar-preview {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    .current-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--primary);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        transition: var(--transition);
+    }
+    .current-avatar:hover {
+        transform: scale(1.02);
+    }
+    .avatar-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #E2E8F0, #CBD5E1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--text-muted);
+        border: 3px solid var(--primary);
+    }
+    .btn-outline-custom {
+        background: transparent;
+        border: 1px solid var(--primary);
+        border-radius: 60px;
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: var(--primary);
+        cursor: pointer;
+        display: inline-block;
+    }
+    .btn-outline-custom:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+    /* أزرار الإجراء */
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border: none;
+        border-radius: 60px;
+        padding: 0.7rem 1.5rem;
+        font-weight: 700;
+        transition: var(--transition);
+        color: white;
+        width: 100%;
+        box-shadow: 0 2px 8px var(--primary-glow);
+    }
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,107,53,0.4);
+    }
+    .btn-outline-secondary-custom {
+        background: transparent;
+        border: 1px solid var(--border-light);
+        border-radius: 60px;
+        padding: 0.7rem 1.5rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: var(--text-muted);
+        width: 100%;
+        text-align: center;
+        display: inline-block;
+    }
+    .btn-outline-secondary-custom:hover {
+        background: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    /* مؤشر التحميل */
+    .loading-spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.6s linear infinite;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    /* الوضع الليلي */
+    body.dark-mode .edit-card {
+        background: rgba(30,41,59,0.95);
+        border-color: rgba(255,255,255,0.1);
+    }
+    body.dark-mode .form-group-custom label {
+        color: #F1F5F9;
+    }
+    body.dark-mode .form-group-custom input,
+    body.dark-mode .form-group-custom select,
+    body.dark-mode .form-group-custom textarea {
+        background: #0F172A;
+        border-color: #334155;
+        color: #F1F5F9;
+    }
+    body.dark-mode .btn-outline-secondary-custom {
+        border-color: #475569;
+        color: #CBD5E1;
+    }
+    body.dark-mode .btn-outline-secondary-custom:hover {
+        background: #334155;
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    @media (max-width: 768px) {
+        .page-header h1 { font-size: 1.5rem; }
+        .card-body-custom { padding: 1.5rem; }
+        .action-buttons { flex-direction: column; }
+        .action-buttons .btn { width: 100%; }
+        .current-avatar, .avatar-placeholder { width: 90px; height: 90px; font-size: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animated-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+</div>
+
+<div class="page-header" data-aos="fade-down">
+    <div class="container">
+        <h1><i class="bi bi-pencil-square"></i> تعديل الملف الشخصي</h1>
+        <p>قم بتحديث بياناتك الشخصية / Mettez à jour vos informations</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="edit-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-header-custom">
+                    <h4><i class="bi bi-person-badge"></i> معلومات الحساب</h4>
+                </div>
+                <div class="card-body-custom">
+                    <form method="post" enctype="multipart/form-data" id="profileForm">
+                        {% csrf_token %}
+
+                        <!-- معاينة الصورة -->
+                        <div class="avatar-preview">
+                            {% if request.user.avatar %}
+                                <img src="{{ request.user.avatar.url }}" class="current-avatar" alt="{{ request.user.username }}" id="avatarPreview">
+                            {% else %}
+                                <div class="avatar-placeholder" id="avatarPreviewPlaceholder">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                            {% endif %}
+                            <div class="mt-2">
+                                <label for="{{ form.avatar.id_for_label }}" class="btn-outline-custom">
+                                    <i class="bi bi-camera"></i> تغيير الصورة
+                                </label>
+                                {{ form.avatar }}
+                            </div>
+                            {% if form.avatar.errors %}
+                                <div class="text-danger small mt-1">{{ form.avatar.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- عرض الحقول مع تنسيق محسن -->
+                        {% for field in form %}
+                            {% if field.name != 'avatar' %}
+                                <div class="form-group-custom">
+                                    <label for="{{ field.id_for_label }}">
+                                        <i class="bi bi-{{ field.name|cut:'_' }}"></i>
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn-primary-custom" id="submitBtn">
+                                <i class="bi bi-check-lg"></i> حفظ التغييرات
+                            </button>
+                            <a href="{% url 'accounts:profile_view' %}" class="btn-outline-secondary-custom">
+                                <i class="bi bi-x-lg"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({ duration: 700, once: true, offset: 50 });
+
+        // معاينة الصورة فوراً عند اختيار ملف جديد
+        const avatarInput = document.querySelector('input[name="avatar"]');
+        const previewImg = document.getElementById('avatarPreview');
+        const previewPlaceholder = document.getElementById('avatarPreviewPlaceholder');
+
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        if (previewImg) {
+                            previewImg.src = ev.target.result;
+                        } else if (previewPlaceholder) {
+                            // استبدال المكان الافتراضي بصورة
+                            const newImg = document.createElement('img');
+                            newImg.src = ev.target.result;
+                            newImg.className = 'current-avatar';
+                            newImg.id = 'avatarPreview';
+                            newImg.alt = 'معاينة الصورة';
+                            previewPlaceholder.parentNode.replaceChild(newImg, previewPlaceholder);
+                        } else {
+                            // إنشاء عنصر الصورة من الصفر
+                            const container = document.querySelector('.avatar-preview');
+                            const newImg = document.createElement('img');
+                            newImg.src = ev.target.result;
+                            newImg.className = 'current-avatar';
+                            newImg.id = 'avatarPreview';
+                            newImg.alt = 'معاينة الصورة';
+                            const btnWrapper = container.querySelector('.mt-2');
+                            container.insertBefore(newImg, btnWrapper);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // تحسين تجربة الإرسال: إضافة مؤشر تحميل ومنع الإرسال المتكرر
+        const form = document.getElementById('profileForm');
+        const submitBtn = document.getElementById('submitBtn');
+        if (form && submitBtn) {
+            form.addEventListener('submit', function(e) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="loading-spinner"></span> جاري الحفظ...';
+                submitBtn.disabled = true;
+                // إذا حدث خطأ في النموذج (مثل أخطاء التحقق من الصحة)، سيتم إعادة تمكين الزر بعد فترة قصيرة
+                setTimeout(() => {
+                    if (submitBtn.disabled) {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                }, 5000);
+            });
+        }
+    });
+</script>
+{% endblock %}

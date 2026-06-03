@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}استبدال النقاط | نظام الإحالات - عقارات الجزائر{% endblock %}
+
+{% block extra_css %}
+<style>
+    .redeem-header {
+        background: linear-gradient(135deg, #1A2C3E 0%, #2D4A6E 100%);
+        padding: 2rem 1rem;
+        border-radius: 0 0 48px 48px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white;
+    }
+
+    .points-card {
+        background: linear-gradient(135deg, #FF6B35, #FF8C5A);
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: center;
+        color: white;
+    }
+
+    .points-value {
+        font-size: 3rem;
+        font-weight: 800;
+    }
+
+    .reward-option {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .reward-option:hover {
+        transform: translateX(5px);
+        border-color: #FF6B35;
+    }
+
+    .reward-option.selected {
+        border-color: #FF6B35;
+        background: #FFF0E8;
+    }
+
+    .reward-points {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #FF6B35;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="redeem-header">
+    <div class="container">
+        <h1><i class="bi bi-gift-fill"></i> استبدال النقاط</h1>
+        <p>استبدل نقاطك بمكافآت قيمة</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- بطاقة النقاط -->
+            <div class="points-card mb-4" data-aos="fade-up">
+                <i class="bi bi-star-fill fs-1"></i>
+                <div class="points-value">{{ total_points|intcomma }}</div>
+                <p class="mb-0">نقطة متاحة للاستبدال</p>
+            </div>
+
+            <!-- نموذج الاستبدال -->
+            <div class="card shadow-sm border-0 rounded-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-body p-4">
+                    <h5 class="mb-3"><i class="bi bi-coin"></i> اختر المكافأة</h5>
+
+                    <form method="post" id="redeemForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">عدد النقاط</label>
+                            <input type="number" name="points" id="pointsInput"
+                                   class="form-control"
+                                   min="100" max="{{ total_points }}" step="100"
+                                   placeholder="أدخل عدد النقاط (الحد الأدنى 100)" required>
+                            <small class="text-muted">الحد الأدنى 100 نقطة</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">نوع المكافأة</label>
+                            <select name="reward_type" id="rewardTypeSelect" class="form-select" required>
+                                <option value="">اختر نوع المكافأة</option>
+                                <option value="cash">💰 نقود - 100 نقطة = 100 دج</option>
+                                <option value="discount">🏷️ خصم - 200 نقطة = خصم 5%</option>
+                                <option value="gift">🎁 هدية - 500 نقطة = هدية قيمة</option>
+                                <option value="voucher">📋 قسيمة شراء - 1000 نقطة = 1000 دج</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">ملاحظات إضافية</label>
+                            <textarea name="notes" class="form-control" rows="3"
+                                      placeholder="أدخل أي ملاحظات إضافية (اختياري)"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary-custom" id="submitBtn">
+                                <i class="bi bi-send"></i> تقديم طلب الاستبدال
+                            </button>
+                            <a href="{% url 'rewards:my_links' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-right"></i> العودة
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- معلومات إضافية -->
+            <div class="alert alert-info mt-4 rounded-4" data-aos="fade-up" data-aos-delay="200">
+                <i class="bi bi-info-circle-fill"></i>
+                <strong>ملاحظة:</strong> سيتم مراجعة طلبك من قبل الإدارة خلال 48 ساعة. بمجرد الموافقة، سيتم إضافة المكافأة إلى حسابك.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pointsInput = document.getElementById('pointsInput');
+    const rewardSelect = document.getElementById('rewardTypeSelect');
+    const submitBtn = document.getElementById('submitBtn');
+    const totalPoints = {{ total_points }};
+
+    // التحقق من صحة النقاط
+    pointsInput.addEventListener('input', function() {
+        let value = parseInt(this.value);
+        if (value < 100) {
+            this.setCustomValidity('الحد الأدنى 100 نقطة');
+        } else if (value > totalPoints) {
+            this.setCustomValidity('لا يمكنك استبدال أكثر من نقاطك المتاحة');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // تأكيد قبل الإرسال
+    submitBtn.addEventListener('click', function(e) {
+        const points = parseInt(pointsInput.value);
+        if (points >= 100 && points <= totalPoints) {
+            if (!confirm(`هل أنت متأكد من رغبتك في استبدال ${points.toLocaleString()} نقطة؟`)) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

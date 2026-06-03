@@ -1,0 +1,315 @@
+[
+  {
+    "model": "properties.zonetype",
+    "pk": 1,
+    "fields": {
+      "name_ar": "منطقة سكنية",
+      "name_fr": "Zone résidentielle"
+    }
+  },
+  {
+    "model": "properties.zonetype",
+    "pk": 2,
+    "fields": {
+      "name_ar": "وسط المدينة",
+      "name_fr": "Centre-ville"
+    }
+  },
+  {
+    "model": "properties.zonetype",
+    "pk": 3,
+    "fields": {
+      "name_ar": "منطقة محيطة",
+      "name_fr": "Zone périphérique"
+    }
+  },
+  {
+    "model": "properties.zonetype",
+    "pk": 4,
+    "fields": {
+      "name_ar": "منطقة نائية",
+      "name_fr": "Zone d'éloignement"
+    }
+  },
+  {
+    "model": "properties.buildingnature",
+    "pk": 1,
+    "fields": {
+      "name_ar": "فردي",
+      "name_fr": "Individuels"
+    }
+  },
+  {
+    "model": "properties.buildingnature",
+    "pk": 2,
+    "fields": {
+      "name_ar": "جماعي وشبه جماعي",
+      "name_fr": "Collectifs et Semi-Collectifs"
+    }
+  },
+  {
+    "model": "properties.buildingnature",
+    "pk": 3,
+    "fields": {
+      "name_ar": "محلات تجارية ومحلات مهنية",
+      "name_fr": "Locaux Commerciaux et Locaux à Usage Professionnels"
+    }
+  },
+  {
+    "model": "properties.buildingnature",
+    "pk": 4,
+    "fields": {
+      "name_ar": "هنغارات",
+      "name_fr": "Hangars"
+    }
+  },
+  {
+    "model": "properties.buildingnature",
+    "pk": 5,
+    "fields": {
+      "name_ar": "أراضي فضاء",
+      "name_fr": "Terrains Nus"
+    }
+  },
+  {
+    "model": "properties.buildingnature",
+    "pk": 6,
+    "fields": {
+      "name_ar": "أراضي فلاحية (سهل)",
+      "name_fr": "Terrains Agricoles en Plaine"
+    }
+  },
+  {
+    "model": "properties.buildingnature",
+    "pk": 7,
+    "fields": {
+      "name_ar": "أراضي فلاحية (منحدر)",
+      "name_fr": "Terrains Agricoles en Pente"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 1,
+    "fields": {
+      "nature": 1,
+      "name_ar": "Standing",
+      "name_fr": "Standing"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 2,
+    "fields": {
+      "nature": 1,
+      "name_ar": "Amélioré",
+      "name_fr": "Amélioré"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 3,
+    "fields": {
+      "nature": 1,
+      "name_ar": "Economique",
+      "name_fr": "Economique"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 4,
+    "fields": {
+      "nature": 1,
+      "name_ar": "Précaire",
+      "name_fr": "Précaire"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 5,
+    "fields": {
+      "nature": 2,
+      "name_ar": "Standing",
+      "name_fr": "Standing"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 6,
+    "fields": {
+      "nature": 2,
+      "name_ar": "Amélioré",
+      "name_fr": "Amélioré"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 7,
+    "fields": {
+      "nature": 2,
+      "name_ar": "Economique",
+      "name_fr": "Economique"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 8,
+    "fields": {
+      "nature": 2,
+      "name_ar": "Précaire",
+      "name_fr": "Précaire"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 9,
+    "fields": {
+      "nature": 3,
+      "name_ar": "Artère hautement commerciale",
+      "name_fr": "Artère hautement commerciale"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 10,
+    "fields": {
+      "nature": 3,
+      "name_ar": "Artère moyennement commerciale",
+      "name_fr": "Artère moyennement commerciale"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 11,
+    "fields": {
+      "nature": 3,
+      "name_ar": "Artère peu commerciale",
+      "name_fr": "Artère peu commerciale"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 12,
+    "fields": {
+      "nature": 4,
+      "name_ar": "Situé en zone urbaine",
+      "name_fr": "Situé en zone urbaine"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 13,
+    "fields": {
+      "nature": 4,
+      "name_ar": "Situé en zone rurale",
+      "name_fr": "Situé en zone rurale"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 14,
+    "fields": {
+      "nature": 5,
+      "name_ar": "Pleine propriété deux façades avec raccordements",
+      "name_fr": "Pleine propriété deux façades avec raccordements"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 15,
+    "fields": {
+      "nature": 5,
+      "name_ar": "Pleine propriété une façade avec raccordements",
+      "name_fr": "Pleine propriété une façade avec raccordements"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 16,
+    "fields": {
+      "nature": 5,
+      "name_ar": "Pleine propriété deux façades sans raccordements",
+      "name_fr": "Pleine propriété deux façades sans raccordements"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 17,
+    "fields": {
+      "nature": 5,
+      "name_ar": "Pleine propriété une façade sans raccordements",
+      "name_fr": "Pleine propriété une façade sans raccordements"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 18,
+    "fields": {
+      "nature": 5,
+      "name_ar": "Dans l'indivision",
+      "name_fr": "Dans l'indivision"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 19,
+    "fields": {
+      "nature": 5,
+      "name_ar": "Industriel",
+      "name_fr": "Industriel"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 20,
+    "fields": {
+      "nature": 6,
+      "name_ar": "Potentialité élevée",
+      "name_fr": "Potentialité élevée"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 21,
+    "fields": {
+      "nature": 6,
+      "name_ar": "Potentialité moyenne",
+      "name_fr": "Potentialité moyenne"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 22,
+    "fields": {
+      "nature": 6,
+      "name_ar": "Potentialité faible",
+      "name_fr": "Potentialité faible"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 23,
+    "fields": {
+      "nature": 7,
+      "name_ar": "Potentialité élevée",
+      "name_fr": "Potentialité élevée"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 24,
+    "fields": {
+      "nature": 7,
+      "name_ar": "Potentialité moyenne",
+      "name_fr": "Potentialité moyenne"
+    }
+  },
+  {
+    "model": "properties.buildingcharacteristic",
+    "pk": 25,
+    "fields": {
+      "nature": 7,
+      "name_ar": "Potentialité faible",
+      "name_fr": "Potentialité faible"
+    }
+  }
+]

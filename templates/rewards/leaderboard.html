@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}لوحة المتصدرين | نظام الإحالات - عقارات الجزائر{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<style>
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --primary-light: #FFF0E8;
+        --secondary: #1A2C3E;
+        --accent: #00C9A7;
+    }
+
+    .leaderboard-header {
+        background: linear-gradient(135deg, var(--secondary) 0%, #2D4A6E 100%);
+        padding: 2rem 1rem;
+        border-radius: 0 0 48px 48px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .leaderboard-header::before {
+        content: '🏆';
+        position: absolute;
+        font-size: 8rem;
+        opacity: 0.1;
+        bottom: -20px;
+        right: 20px;
+        transform: rotate(-15deg);
+    }
+
+    .rank-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .rank-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .rank-1 {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: white;
+    }
+
+    .rank-2 {
+        background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+        color: white;
+    }
+
+    .rank-3 {
+        background: linear-gradient(135deg, #CD7F32, #B87333);
+        color: white;
+    }
+
+    .rank-number {
+        width: 45px;
+        height: 45px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        font-weight: bold;
+    }
+
+    .rank-1 .rank-number, .rank-2 .rank-number, .rank-3 .rank-number {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .medal {
+        font-size: 1.8rem;
+    }
+
+    .points-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 0.3rem 0.8rem;
+        border-radius: 40px;
+        font-weight: bold;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="leaderboard-header" data-aos="fade-down">
+    <div class="container">
+        <h1><i class="bi bi-trophy-fill"></i> لوحة المتصدرين</h1>
+        <p>أفضل المروجين في منصة عقارات الجزائر</p>
+        <div class="mt-2">
+            <span class="badge bg-light text-dark px-3 py-2">
+                <i class="bi bi-star-fill text-warning"></i> {{ top_promoters|length }} مروج
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if top_promoters %}
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- المراكز الثلاثة الأولى -->
+                <div class="row g-3 mb-4">
+                    {% for promoter in top_promoters|slice:":3" %}
+                    <div class="col-md-4">
+                        <div class="rank-card rank-{{ forloop.counter }} text-center p-3">
+                            <div class="medal">
+                                {% if forloop.counter == 1 %}🥇
+                                {% elif forloop.counter == 2 %}🥈
+                                {% else %}🥉
+                                {% endif %}
+                            </div>
+                            <h5 class="mt-2 mb-1">{{ promoter.user.get_full_name|default:promoter.user.username }}</h5>
+                            <div class="points-badge d-inline-block mt-2">
+                                <i class="bi bi-star-fill"></i> {{ promoter.points|intcomma }} نقطة
+                            </div>
+                            <div class="small mt-2">
+                                <i class="bi bi-link-45deg"></i> {{ promoter.links.count }} رابط
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- باقي المراكز -->
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-transparent border-0 pt-3">
+                        <h5><i class="bi bi-list-ol"></i> جميع المروجين</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for promoter in top_promoters|slice:"3:" %}
+                        <div class="rank-card d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rank-number">{{ forloop.counter|add:3 }}</div>
+                                <div>
+                                    <strong>{{ promoter.user.get_full_name|default:promoter.user.username }}</strong>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-link-45deg"></i> {{ promoter.links.count }} رابط
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="fw-bold text-primary">{{ promoter.points|intcomma }}</span>
+                                <small class="text-muted">نقطة</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- معلومات إضافية -->
+        <div class="row mt-4">
+            <div class="col-md-6 mx-auto">
+                <div class="alert alert-info text-center rounded-4">
+                    <i class="bi bi-info-circle"></i>
+                    يتم تحديث لوحة المتصدرين يومياً بناءً على النقاط المكتسبة من الإحالات الناجحة.
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-people fs-1 text-muted"></i>
+            <p class="mt-3">لا يوجد مروجون حتى الآن</p>
+            <a href="{% url 'rewards:become_promoter' %}" class="btn btn-primary-custom">
+                <i class="bi bi-star"></i> كن أول مروج
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({ duration: 700, once: true, offset: 50 });
+    });
+</script>
+{% endblock %}

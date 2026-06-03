@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تسجيل الدخول | عقارات الجزائر{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <!-- خلفية ديناميكية -->
+    <div class="animated-bg">
+        <div class="gradient-orb-1"></div>
+        <div class="gradient-orb-2"></div>
+        <div class="gradient-orb-3"></div>
+        <div class="gradient-orb-4"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-lg-5 col-md-7 col-12" data-aos="fade-up" data-aos-duration="800">
+            <div class="login-card premium-glass p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="login-icon-wrapper">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                    </div>
+                    <h2 class="fw-bold mt-3 gradient-text">مرحباً بعودتك</h2>
+                    <p class="text-muted">سجل الدخول للوصول إلى حسابك</p>
+                </div>
+
+                <!-- عرض رسائل الخطأ -->
+                {% if form.errors %}
+                <div class="alert alert-error mb-4 p-3 rounded-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    اسم المستخدم أو كلمة المرور غير صحيحة. الرجاء المحاولة مرة أخرى.
+                </div>
+                {% endif %}
+
+                {% if next %}
+                    {% if user.is_authenticated %}
+                    <div class="alert alert-warning mb-4">
+                        حسابك لا يملك صلاحية الوصول إلى هذه الصفحة.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-4">
+                        الرجاء تسجيل الدخول لمشاهدة هذه الصفحة.
+                    </div>
+                    {% endif %}
+                {% endif %}
+
+                <form method="post" action="{% url 'accounts:login' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">اسم المستخدم</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-person"></i></span>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">كلمة المرور</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-lock"></i></span>
+                            {{ form.password }}
+                            <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword">
+                                <i class="bi bi-eye-slash"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-glow w-100 py-2 fw-bold">
+                        <i class="bi bi-box-arrow-in-right"></i> دخول
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="small text-muted">ليس لديك حساب؟ <a href="{% url 'accounts:register' %}" class="text-primary fw-bold text-decoration-none">إنشاء حساب جديد</a></p>
+                    <p class="small text-muted"><a href="#" class="text-decoration-none" onclick="alert('سيتم إضافة استعادة كلمة المرور قريباً');">نسيت كلمة المرور؟</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-wrapper {
+        position: relative;
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        background: linear-gradient(145deg, #f8faff 0%, #f0f4fe 100%);
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(12px);
+        border-radius: 48px;
+        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        transition: all 0.3s;
+    }
+
+    .login-icon-wrapper {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        box-shadow: 0 10px 20px -5px rgba(13,110,253,0.4);
+    }
+
+    .login-icon-wrapper i {
+        font-size: 2rem;
+        color: white;
+    }
+
+    .gradient-text {
+        background: linear-gradient(125deg, #0d6efd, #6610f2);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .input-group-text {
+        border-radius: 40px 0 0 40px;
+        border: 1px solid #ced4da;
+        border-right: none;
+    }
+
+    .input-group input {
+        border-radius: 0 40px 40px 0;
+        border-left: none;
+    }
+
+    .input-group input:focus {
+        box-shadow: none;
+        border-color: #0d6efd;
+    }
+
+    .input-group button {
+        border-radius: 0 40px 40px 0;
+        border-left: none;
+    }
+
+    .btn-primary-glow {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        border: none;
+        border-radius: 50px;
+        padding: 0.7rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        color: white;
+    }
+
+    .btn-primary-glow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(13,110,253,0.4);
+        color: white;
+    }
+
+    .form-label {
+        color: #1e293b;
+        font-size: 0.9rem;
+    }
+
+    /* رسائل الخطأ */
+    .alert-error {
+        background: #fee2e2;
+        border-right: 4px solid #dc2626;
+        color: #991b1b;
+        border-radius: 16px;
+    }
+
+    /* تنسيق حقول النموذج */
+    .input-group input {
+        background: white;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: #0d6efd;
+    }
+
+    /* الوضع الليلي */
+    .dark-mode .login-card {
+        background: rgba(30, 41, 59, 0.9);
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    .dark-mode .form-label {
+        color: #e2e8f0;
+    }
+
+    .dark-mode .input-group-text,
+    .dark-mode .input-group input,
+    .dark-mode .input-group button {
+        background-color: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+    }
+
+    @media (max-width: 576px) {
+        .login-card { padding: 1.5rem !important; }
+        .login-icon-wrapper { width: 55px; height: 55px; }
+        .login-icon-wrapper i { font-size: 1.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // إظهار/إخفاء كلمة المرور
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.querySelector('input[name="password"]');
+
+    if (togglePassword && passwordField) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            const icon = this.querySelector('i');
+            if (type === 'text') {
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            } else {
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            }
+        });
+    }
+</script>
+{% endblock %}

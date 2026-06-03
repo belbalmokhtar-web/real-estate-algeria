@@ -1,0 +1,1048 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}عقارات الجزائر | المنصة العقارية الرائدة{% endblock %}</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}أكبر منصة عقارية في الجزائر. ابحث عن آلاف العقارات، قارن الأسعار، تواصل مع الوكلاء والمطورين العقاريين.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}عقارات الجزائر, بيع, شراء, إيجار, شقق, فلل, أراضي, وكلاء عقاريون, مطورون عقاريون{% endblock %}">
+    <meta name="author" content="عقارات الجزائر">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="theme-color" content="#FF6B35">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="language" content="ar">
+    <meta name="revisit-after" content="7 days">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}عقارات الجزائر | المنصة العقارية الرائدة{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}أكبر منصة عقارية في الجزائر. ابحث عن آلاف العقارات وأفضل الأسعار.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'images/og-image.jpg' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="عقارات الجزائر">
+    <meta property="og:locale" content="ar_AR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}عقارات الجزائر{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}أكبر منصة عقارية في الجزائر{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% static 'images/twitter-image.jpg' %}{% endblock %}">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <!-- Preload Critical Assets -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" as="style">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://unpkg.com">
+
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+
+    <!-- Stylesheets -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+
+    <style>
+        /* ========== CSS Variables ========== */
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E55A2B;
+            --primary-light: #FFF0E8;
+            --primary-glow: rgba(255,107,53,0.2);
+            --secondary: #1A2C3E;
+            --secondary-light: #2D4A6E;
+            --accent: #00C9A7;
+            --accent-dark: #00A88B;
+            --accent-glow: rgba(0,201,167,0.15);
+            --gray-bg: #F9FAFB;
+            --white: #FFFFFF;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --border-light: #E2E8F0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --info: #3B82F6;
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-lg: 0 12px 24px -8px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 32px -12px rgba(0,0,0,0.15);
+            --transition-fast: 0.15s ease;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--gray-bg);
+            font-family: 'Inter', 'Tajawal', 'Cairo', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+            color: var(--text-dark);
+            transition: background-color var(--transition), color var(--transition);
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        /* ========== Custom Scrollbar ========== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--border-light);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+            transition: var(--transition-fast);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ========== Scroll Progress Bar ========== */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            z-index: 10000;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 6px var(--primary-glow);
+        }
+
+        /* ========== Animated Background ========== */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.5;
+            animation: floatOrb 25s infinite alternate;
+        }
+
+        .orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--primary), transparent); top: -20%; right: -20%; }
+        .orb-2 { width: 40vw; height: 40vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -10%; left: -10%; animation-duration: 30s; }
+        .orb-3 { width: 30vw; height: 30vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 30%; left: 20%; animation-duration: 22s; opacity: 0.3; }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0,0) scale(1); }
+            100% { transform: translate(3%, 3%) scale(1.08); }
+        }
+
+        .grid-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* ========== Glassmorphism Navbar ========== */
+        .navbar {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            padding: 0.6rem 1rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .navbar.scrolled {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow-md);
+            border-bottom-color: rgba(0,0,0,0.05);
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: var(--transition-fast);
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.02);
+        }
+
+        .navbar-brand i {
+            color: var(--primary);
+            background: none;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--text-dark) !important;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            margin: 0 0.2rem;
+            border-radius: 40px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+            border-radius: 2px;
+        }
+
+        .navbar-nav .nav-link:hover::after {
+            width: 70%;
+            right: 15%;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background: var(--primary-light);
+            color: var(--primary) !important;
+            transform: translateY(-1px);
+        }
+
+        .navbar-nav .nav-link.active {
+            background: var(--primary-light);
+            color: var(--primary) !important;
+        }
+
+        .navbar-nav .nav-link.active::after {
+            width: 70%;
+            right: 15%;
+        }
+
+        .btn-add-listing {
+            background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+            color: white !important;
+            border-radius: 40px !important;
+            padding: 0.3rem 1.2rem !important;
+            box-shadow: 0 2px 8px var(--primary-glow);
+            transition: var(--transition);
+        }
+
+        .btn-add-listing:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--primary-glow);
+        }
+
+        /* ========== Dropdown Menu ========== */
+        .dropdown-menu {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .dropdown-item {
+            color: var(--text-dark);
+            border-radius: 14px;
+            padding: 0.5rem 1rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateX(-3px);
+        }
+
+        /* ========== Footer ========== */
+        .footer {
+            background: var(--secondary);
+            color: #CBD5E1;
+            padding: 3rem 0 1.5rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        .footer a {
+            color: #E2E8F0;
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+
+        .footer a:hover {
+            color: var(--primary);
+            transform: translateX(-2px);
+        }
+
+        .footer .social-links a {
+            display: inline-block;
+            margin-left: 1rem;
+            font-size: 1.3rem;
+            transition: var(--transition);
+        }
+
+        .footer .social-links a:hover {
+            transform: translateY(-3px);
+            color: var(--primary);
+        }
+
+        /* ========== Preloader ========== */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #FFFFFF, var(--gray-bg));
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .preloader-content {
+            text-align: center;
+        }
+
+        .preloader-logo i {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.6; transform: scale(0.95); }
+        }
+
+        .preloader-progress {
+            width: 200px;
+            height: 4px;
+            background: var(--border-light);
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .preloader-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        /* ========== Dark Mode Toggle ========== */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            z-index: 1000;
+            border: none;
+            color: var(--primary);
+        }
+
+        .dark-mode-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* ========== Dark Mode ========== */
+        body.dark-mode {
+            --gray-bg: #0F172A;
+            --text-dark: #F1F5F9;
+            --text-muted: #94A3B8;
+            --border-light: #334155;
+            --white: #1E293B;
+        }
+
+        body.dark-mode .navbar {
+            background: rgba(15,23,42,0.85);
+            border-bottom-color: rgba(255,255,255,0.05);
+        }
+
+        body.dark-mode .navbar-nav .nav-link {
+            color: #E2E8F0 !important;
+        }
+
+        body.dark-mode .dropdown-menu {
+            background: #1E293B;
+            border-color: #334155;
+        }
+
+        body.dark-mode .dropdown-item {
+            color: #E2E8F0;
+        }
+
+        body.dark-mode .dropdown-item:hover {
+            background: #334155;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: #1E293B;
+            color: var(--primary);
+        }
+
+        /* ========== Accessibility ========== */
+        .skip-to-content {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary);
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+            z-index: 10001;
+            transition: top 0.2s;
+        }
+
+        .skip-to-content:focus {
+            top: 0;
+        }
+
+        /* ========== Toast Notifications ========== */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            z-index: 1050;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            border-right: 4px solid var(--primary);
+            min-width: 280px;
+        }
+
+        body.dark-mode .toast {
+            background: #1E293B;
+            color: #F1F5F9;
+        }
+
+        /* ========== Utility Classes ========== */
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .transition {
+            transition: var(--transition);
+        }
+
+        .glass-effect {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+
+            .dark-mode-toggle {
+                width: 40px;
+                height: 40px;
+                bottom: 15px;
+                left: 15px;
+            }
+
+            .toast-container {
+                top: 70px;
+                left: 10px;
+                right: 10px;
+            }
+
+            .toast {
+                width: 100%;
+                max-width: 350px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar-nav .nav-link {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-add-listing {
+                padding: 0.2rem 1rem !important;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ========== Print Styles ========== */
+        @media print {
+            .navbar, .footer, .dark-mode-toggle, .animated-bg, #preloader, .scroll-progress {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+
+            main {
+                padding-top: 0 !important;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<a href="#main-content" class="skip-to-content">تخطي إلى المحتوى الرئيسي</a>
+
+<!-- Animated Background -->
+<div class="animated-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+</div>
+
+<!-- Preloader -->
+<div id="preloader">
+    <div class="preloader-content">
+        <div class="preloader-logo"><i class="bi bi-building"></i></div>
+        <div class="preloader-progress"><div class="preloader-progress-bar" id="preloaderBar"></div></div>
+        <p class="mt-2 small text-muted">جاري التحميل...</p>
+    </div>
+</div>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Modern Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top" id="main-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="bi bi-building"></i> عقارات الجزائر
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="القائمة">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+                        <i class="bi bi-house-door"></i> الرئيسية
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'properties' in request.resolver_match.app_name %}active{% endif %}" href="{% url 'properties:property_list' %}">
+                        <i class="bi bi-building"></i> العقارات
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'rewards:my_links' %}">
+                        <i class="bi bi-link-45deg"></i> الإحالات
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:agent_list' %}">
+                        <i class="bi bi-people"></i> الوكلاء
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'developer_list_global' %}">
+                        <i class="bi bi-building"></i> المطورون
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'properties:valuation' %}">
+                        <i class="bi bi-calculator"></i> التقييم العقاري
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link btn-add-listing" href="{% url 'properties:property_create' %}">
+                            <i class="bi bi-plus-circle"></i> إضافة عقار
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="rounded-circle me-1" width="28" height="28" style="object-fit: cover;">
+                            {% else %}
+                                <i class="bi bi-person-circle"></i>
+                            {% endif %}
+                            {{ user.username|truncatechars:15 }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile_view' %}"><i class="bi bi-person"></i> ملفي الشخصي</a></li>
+                            <li><a class="dropdown-item" href="{% url 'properties:property_list' %}?owner={{ user.id }}"><i class="bi bi-house"></i> عقاراتي</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:favorites_list' %}"><i class="bi bi-heart"></i> المفضلة</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:inbox' %}"><i class="bi bi-envelope"></i> الرسائل</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right"></i> تسجيل خروج</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="bi bi-box-arrow-in-right"></i> دخول
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="bi bi-person-plus"></i> تسجيل جديد
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main id="main-content">
+    <!-- Messages Display -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="toast-container position-fixed top-0 start-0 p-3" style="z-index: 1050;">
+                <div class="toast align-items-center text-bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% elif message.tags == 'success' %}success{% else %}primary{% endif %} border-0 show" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Modern Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row gy-4">
+            <div class="col-md-4">
+                <h5><i class="bi bi-building"></i> عقارات الجزائر</h5>
+                <p class="small">أكبر منصة عقارية في الجزائر، تجمع بين أحدث تحليلات السوق وأسهل طرق البحث عن العقارات. نقدم خدماتنا في جميع الولايات الجزائرية.</p>
+                <div class="mt-2">
+                    <span class="badge bg-primary-light text-primary">✓ موثوق 100%</span>
+                    <span class="badge bg-success-light text-success mx-1">✓ آمن</span>
+                    <span class="badge bg-info-light text-info">✓ سريع</span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <h5>روابط سريعة</h5>
+                <ul class="list-unstyled small">
+                    <li class="mb-2"><a href="{% url 'home' %}"><i class="bi bi-chevron-left"></i> الرئيسية</a></li>
+                    <li class="mb-2"><a href="{% url 'properties:property_list' %}"><i class="bi bi-chevron-left"></i> العقارات</a></li>
+                    <li class="mb-2"><a href="{% url 'rewards:my_links' %}"><i class="bi bi-chevron-left"></i> الإحالات</a></li>
+                    <li class="mb-2"><a href="{% url 'accounts:agent_list' %}"><i class="bi bi-chevron-left"></i> الوكلاء</a></li>
+                </ul>
+            </div>
+            <div class="col-md-2">
+    <h5>دعم</h5>
+    <ul class="list-unstyled small">
+        <li class="mb-2"><a href="#"><i class="bi bi-chevron-left"></i> عن المنصة</a></li>
+        <li class="mb-2"><a href="#"><i class="bi bi-chevron-left"></i> اتصل بنا</a></li>
+        <li class="mb-2"><a href="#"><i class="bi bi-chevron-left"></i> سياسة الخصوصية</a></li>
+        <li class="mb-2"><a href="#"><i class="bi bi-chevron-left"></i> الشروط والأحكام</a></li>
+    </ul>
+</div>
+            <div class="col-md-4">
+                <h5>تابعنا</h5>
+                <div class="social-links mb-3">
+                    <a href="#" aria-label="Facebook" target="_blank"><i class="bi bi-facebook"></i></a>
+                    <a href="#" aria-label="Twitter" target="_blank"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="Instagram" target="_blank"><i class="bi bi-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn" target="_blank"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" aria-label="YouTube" target="_blank"><i class="bi bi-youtube"></i></a>
+                </div>
+                <div class="newsletter">
+                    <h6 class="mb-2">اشترك في النشرة البريدية</h6>
+                    <div class="input-group">
+                        <input type="email" class="form-control form-control-sm" placeholder="بريدك الإلكتروني" id="footerNewsletterEmail">
+                        <button class="btn btn-primary btn-sm" type="button" id="footerNewsletterBtn">اشتراك</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="mt-4 bg-secondary">
+        <div class="text-center small">
+            © 2026 عقارات الجزائر – جميع الحقوق محفوظة | تصميم وتطوير <i class="bi bi-heart-fill text-danger"></i> في الجزائر
+        </div>
+    </div>
+</footer>
+
+<!-- Dark Mode Toggle -->
+<button class="dark-mode-toggle" id="darkModeToggle" aria-label="الوضع الليلي">
+    <i class="bi bi-moon-stars"></i>
+</button>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+    (function() {
+        'use strict';
+
+        // ========== Preloader ==========
+        let progress = 0;
+        const preloaderBar = document.getElementById('preloaderBar');
+        const preloader = document.getElementById('preloader');
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                if (preloader) {
+                    preloader.style.opacity = '0';
+                    setTimeout(() => { preloader.style.display = 'none'; }, 400);
+                }
+            }
+            if (preloaderBar) preloaderBar.style.width = progress + '%';
+        }, 100);
+
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (preloader && preloader.style.display !== 'none') {
+                    preloader.style.opacity = '0';
+                    setTimeout(() => { preloader.style.display = 'none'; }, 400);
+                }
+            }, 500);
+        });
+
+        // ========== Scroll Progress Bar ==========
+        const progressBar = document.getElementById('scrollProgress');
+        if (progressBar) {
+            window.addEventListener('scroll', () => {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + '%';
+            });
+        }
+
+        // ========== Adjust Main Padding ==========
+        function adjustMainPadding() {
+            const navbar = document.getElementById('main-navbar');
+            const main = document.getElementById('main-content');
+            if (navbar && main) {
+                const navbarHeight = navbar.offsetHeight;
+                main.style.paddingTop = navbarHeight + 'px';
+            }
+        }
+
+        window.addEventListener('load', adjustMainPadding);
+        window.addEventListener('resize', adjustMainPadding);
+
+        // ========== Navbar Scroll Effect ==========
+        const navbar = document.getElementById('main-navbar');
+        if (navbar) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        }
+
+        // ========== AOS Initialization ==========
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 700,
+                once: true,
+                offset: 40,
+                easing: 'ease-in-out'
+            });
+        }
+
+        // ========== Dark Mode Toggle ==========
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                const icon = darkModeToggle.querySelector('i');
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.classList.remove('bi-moon-stars');
+                    icon.classList.add('bi-sun');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    icon.classList.remove('bi-sun');
+                    icon.classList.add('bi-moon-stars');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+
+            // Load saved preference
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'true') {
+                document.body.classList.add('dark-mode');
+                const icon = darkModeToggle.querySelector('i');
+                icon.classList.remove('bi-moon-stars');
+                icon.classList.add('bi-sun');
+            }
+        }
+
+        // ========== Toast Notification System ==========
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toastId = 'toast_' + Date.now();
+            const toastEl = document.createElement('div');
+            toastEl.id = toastId;
+            toastEl.className = 'toast show';
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+
+            const iconMap = {
+                success: 'bi-check-circle-fill text-success',
+                error: 'bi-exclamation-triangle-fill text-danger',
+                warning: 'bi-exclamation-triangle-fill text-warning',
+                info: 'bi-info-circle-fill text-info'
+            };
+
+            const icon = iconMap[type] || iconMap.success;
+            const title = type === 'success' ? 'تم بنجاح' : (type === 'error' ? 'خطأ' : (type === 'warning' ? 'تنبيه' : 'معلومة'));
+
+            toastEl.innerHTML = `
+                <div class="toast-header">
+                    <i class="bi ${icon} me-2"></i>
+                    <strong class="me-auto">${title}</strong>
+                    <small>الآن</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="إغلاق"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+
+            container.appendChild(toastEl);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                const toast = document.getElementById(toastId);
+                if (toast && toast.remove) {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 5000);
+        };
+
+        // ========== CSRF Token Setup for AJAX ==========
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+        if (typeof $ !== 'undefined') {
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+        }
+
+        // ========== Newsletter Subscription ==========
+        const newsletterBtn = document.getElementById('footerNewsletterBtn');
+        if (newsletterBtn) {
+            newsletterBtn.addEventListener('click', function() {
+                const emailInput = document.getElementById('footerNewsletterEmail');
+                const email = emailInput ? emailInput.value.trim() : '';
+
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showToast('الرجاء إدخال بريد إلكتروني صحيح', 'error');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/newsletter/subscribe/',
+                    method: 'POST',
+                    data: { email: email },
+                    success: function(response) {
+                        showToast('شكراً للاشتراك! تم إضافة بريدك الإلكتروني بنجاح', 'success');
+                        if (emailInput) emailInput.value = '';
+                    },
+                    error: function() {
+                        showToast('حدث خطأ. الرجاء المحاولة مرة أخرى', 'error');
+                    }
+                });
+            });
+        }
+
+        // ========== Auto-hide Alerts ==========
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 300);
+                }, 5000);
+            });
+        }, 1000);
+
+        // ========== Smooth Scroll for Anchor Links ==========
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const target = this.getAttribute('href');
+                if (target !== '#' && target !== '') {
+                    const element = document.querySelector(target);
+                    if (element) {
+                        e.preventDefault();
+                        element.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+
+        // ========== Lazy Loading Images ==========
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.getAttribute('data-src');
+                        if (src) {
+                            img.src = src;
+                            img.removeAttribute('data-src');
+                        }
+                        observer.unobserve(img);
+                    }
+                });
+            });
+
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+    })();
+</script>
+
+{% block extra_js %}{% endblock %}
+
+<!-- Structured Data / JSON-LD for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    "name": "عقارات الجزائر",
+    "url": "{{ request.build_absolute_uri }}",
+    "logo": "{{ request.build_absolute_uri }}{% static 'logo.png' %}",
+    "description": "أكبر منصة عقارية في الجزائر",
+    "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "DZ",
+        "addressLocality": "Algiers"
+    },
+    "sameAs": [
+        "https://www.facebook.com/",
+        "https://www.twitter.com/",
+        "https://www.instagram.com/",
+        "https://www.linkedin.com/"
+    ]
+}
+</script>
+</body>
+</html>

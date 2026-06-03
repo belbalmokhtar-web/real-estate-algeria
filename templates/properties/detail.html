@@ -1,0 +1,532 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ property.title }} | عقارات الجزائر{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
+<style>
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --primary-light: #FFF0E8;
+        --primary-glow: rgba(255,107,53,0.2);
+        --secondary: #1A2C3E;
+        --secondary-light: #2D4A6E;
+        --accent: #00C9A7;
+        --gray-bg: #F9FAFB;
+        --white: #FFFFFF;
+        --card-shadow: 0 20px 35px -12px rgba(0,0,0,0.08);
+        --hover-shadow: 0 25px 40px -12px rgba(0,0,0,0.15);
+        --border-radius: 28px;
+        --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    body { background: var(--gray-bg); font-family: 'Inter', 'Tajawal', sans-serif; }
+
+    .animated-bg {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: floatOrb 25s infinite alternate;
+    }
+    .orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--primary), transparent); top: -20%; right: -20%; }
+    .orb-2 { width: 40vw; height: 40vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -10%; left: -10%; animation-duration: 30s; }
+    .orb-3 { width: 30vw; height: 30vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 30%; left: 20%; animation-duration: 22s; opacity: 0.3; }
+    @keyframes floatOrb {
+        0% { transform: translate(0,0) scale(1); }
+        100% { transform: translate(3%, 3%) scale(1.08); }
+    }
+    .grid-overlay {
+        position: absolute;
+        width: 100%; height: 100%;
+        background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .property-gallery {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        background: white;
+        margin-bottom: 1.5rem;
+    }
+    .swiper { width: 100%; height: 400px; }
+    .swiper-slide img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+    .swiper-button-next, .swiper-button-prev {
+        width: 40px; height: 40px;
+        background: rgba(255,255,255,0.8);
+        border-radius: 50%;
+        backdrop-filter: blur(4px);
+    }
+    .swiper-button-next:after, .swiper-button-prev:after { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+    .swiper-pagination-bullet-active { background: var(--primary); }
+    .thumb-swiper { margin-top: 10px; height: 100px; }
+    .thumb-swiper .swiper-slide { opacity: 0.5; border-radius: 16px; overflow: hidden; cursor: pointer; }
+    .thumb-swiper .swiper-slide-thumb-active { opacity: 1; border: 2px solid var(--primary); }
+    .thumb-swiper .swiper-slide img { width: 100%; height: 80px; object-fit: cover; }
+
+    .info-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+    }
+    .info-card:hover { transform: translateY(-3px); box-shadow: var(--hover-shadow); }
+    .info-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary);
+        display: inline-block;
+    }
+
+    .property-price {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--primary);
+        background: var(--primary-light);
+        padding: 0.2rem 1rem;
+        border-radius: 60px;
+        display: inline-block;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+    .feature-item {
+        background: var(--primary-light);
+        padding: 0.8rem;
+        border-radius: 20px;
+        text-align: center;
+        transition: var(--transition);
+    }
+    .feature-item i { font-size: 1.5rem; color: var(--primary); margin-bottom: 0.3rem; display: block; }
+    .feature-item span { font-size: 0.85rem; font-weight: 600; }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 0.8rem;
+    }
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6rem;
+        background: #F8FAFC;
+        border-radius: 20px;
+        transition: var(--transition);
+    }
+    .detail-item i { font-size: 1.2rem; color: var(--primary); width: 28px; text-align: center; }
+    .detail-label { font-weight: 600; font-size: 0.8rem; color: var(--secondary); min-width: 100px; }
+    .detail-value { font-size: 0.8rem; color: var(--secondary-light); }
+
+    .seller-card { text-align: center; padding: 1.5rem; }
+    .seller-avatar {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .rating-stars { color: #FFD700; font-size: 1rem; letter-spacing: 2px; }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border: none;
+        border-radius: 60px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: white;
+    }
+    .btn-primary-custom:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,107,53,0.4); }
+    .btn-outline-primary-custom {
+        border: 1px solid var(--primary);
+        border-radius: 60px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--primary);
+    }
+    .btn-outline-primary-custom:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+
+    .similar-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem;
+        border-radius: 20px;
+        transition: var(--transition);
+        text-decoration: none;
+        color: inherit;
+    }
+    .similar-card:hover { background: var(--primary-light); }
+    .similar-img { width: 70px; height: 70px; object-fit: cover; border-radius: 16px; }
+    .similar-price { color: var(--primary); font-weight: bold; font-size: 0.85rem; }
+
+    .dark-mode .info-card,
+    .dark-mode .property-gallery { background: #1E293B; }
+    .dark-mode .feature-item { background: #334155; color: #F1F5F9; }
+    .dark-mode .info-title { color: #F1F5F9; }
+    .dark-mode .detail-item { background: #1E293B; }
+    .dark-mode .detail-label,
+    .dark-mode .detail-value { color: #E2E8F0; }
+    .dark-mode .similar-card:hover { background: #334155; }
+
+    @media (max-width: 768px) {
+        .swiper { height: 250px; }
+        .property-price { font-size: 1.2rem; }
+        .info-title { font-size: 1rem; }
+        .details-grid { grid-template-columns: 1fr; }
+        .feature-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animated-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+</div>
+
+<div class="container my-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="bi bi-house-door"></i> الرئيسية</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'properties:property_list' %}">العقارات</a></li>
+            <li class="breadcrumb-item active">{{ property.title|truncatechars:40 }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- العمود الرئيسي -->
+        <div class="col-lg-8">
+            <!-- معرض الصور -->
+            <div class="property-gallery">
+                <div class="swiper main-swiper">
+                    <div class="swiper-wrapper">
+                        {% if property.image %}
+                        <div class="swiper-slide">
+                            <a href="{{ property.image.url }}" data-lightbox="property-gallery">
+                                <img src="{{ property.image.url }}" alt="{{ property.title }}" loading="lazy">
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% for img in property.images.all %}
+                        <div class="swiper-slide">
+                            <a href="{{ img.image.url }}" data-lightbox="property-gallery">
+                                <img src="{{ img.image.url }}" alt="{{ property.title }}" loading="lazy">
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-pagination"></div>
+                </div>
+                {% if property.images.all|length > 1 %}
+                <div class="swiper thumb-swiper mt-2">
+                    <div class="swiper-wrapper">
+                        {% if property.image %}<div class="swiper-slide"><img src="{{ property.image.url }}" alt="thumb"></div>{% endif %}
+                        {% for img in property.images.all %}<div class="swiper-slide"><img src="{{ img.image.url }}" alt="thumb"></div>{% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- العنوان والسعر -->
+            <div class="info-card">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                    <h1 class="fw-bold fs-3 mb-0">{{ property.title }}</h1>
+                    <div class="property-price">{{ property.price|floatformat:0|intcomma }} دج</div>
+                </div>
+                <div class="mt-2 text-muted">
+                    <i class="bi bi-geo-alt-fill text-primary"></i>
+                    {{ property.address|default:"العنوان غير محدد" }}
+                    {% if property.wilaya %} - {{ property.wilaya }}{% endif %}
+                    {% if property.commune %} ({{ property.commune }}){% endif %}
+                </div>
+            </div>
+
+            <!-- خصائص العقار — بدون تاريخ ومشاهدات (موجودة في أماكنها المخصصة) -->
+            <div class="info-card">
+                <h5 class="info-title"><i class="bi bi-info-circle"></i> خصائص العقار</h5>
+                <div class="feature-grid">
+                    <div class="feature-item"><i class="bi bi-rulers"></i><span>{{ property.area_sqm }} م²</span></div>
+                    {% if property.bedrooms %}<div class="feature-item"><i class="bi bi-door-closed"></i><span>{{ property.bedrooms }} غرف</span></div>{% endif %}
+                    {% if property.bathrooms %}<div class="feature-item"><i class="bi bi-droplet"></i><span>{{ property.bathrooms }} حمامات</span></div>{% endif %}
+                    <div class="feature-item"><i class="bi bi-tag"></i><span>{{ property.get_listing_type_display }}</span></div>
+                    <div class="feature-item"><i class="bi bi-building"></i><span>{{ property.get_property_type_display }}</span></div>
+                </div>
+            </div>
+
+            <!-- معلومات تفصيلية -->
+            <div class="info-card">
+                <h5 class="info-title"><i class="bi bi-file-text"></i> معلومات تفصيلية</h5>
+                <div class="details-grid">
+                    <div class="detail-item"><i class="bi bi-hash"></i><span class="detail-label">رقم العقار:</span><span class="detail-value">{{ property.id }}</span></div>
+                    <div class="detail-item"><i class="bi bi-calendar-event"></i><span class="detail-label">تاريخ الإضافة:</span><span class="detail-value">{{ property.created_at|date:"d/m/Y H:i" }}</span></div>
+                    <div class="detail-item"><i class="bi bi-cart-check"></i><span class="detail-label">نوع البيع:</span><span class="detail-value">{{ property.listing_type|default:"مباشر"|title }}</span></div>
+                    <div class="detail-item"><i class="bi bi-credit-card"></i><span class="detail-label">شروط الدفع:</span><span class="detail-value">قابلة للنقاش</span></div>
+                </div>
+            </div>
+
+            <!-- التجهيزات -->
+            <div class="info-card">
+                <h5 class="info-title"><i class="bi bi-grid"></i> التجهيزات</h5>
+                <div class="details-grid">
+                    <div class="detail-item"><i class="bi bi-egg-fried"></i><span class="detail-label">مطبخ مجهز:</span><span class="detail-value">نعم</span></div>
+                    <div class="detail-item"><i class="bi bi-fire"></i><span class="detail-label">تدفئة:</span><span class="detail-value">نعم</span></div>
+                    <div class="detail-item"><i class="bi bi-snow2"></i><span class="detail-label">تكييف:</span><span class="detail-value">نعم</span></div>
+                    <div class="detail-item"><i class="bi bi-arrow-up-short"></i><span class="detail-label">مصعد:</span><span class="detail-value">نعم</span></div>
+                    <div class="detail-item"><i class="bi bi-droplet"></i><span class="detail-label">خزان مياه:</span><span class="detail-value">نعم</span></div>
+                    <div class="detail-item"><i class="bi bi-sun"></i><span class="detail-label">تراس:</span><span class="detail-value">نعم</span></div>
+                    <div class="detail-item"><i class="bi bi-water"></i><span class="detail-label">مسبح:</span><span class="detail-value">{% if property.property_type == 'villa' %}نعم{% else %}لا{% endif %}</span></div>
+                </div>
+            </div>
+
+            <!-- الوصف -->
+            {% if property.description %}
+            <div class="info-card">
+                <h5 class="info-title"><i class="bi bi-chat-text"></i> الوصف</h5>
+                <p class="mb-0">{{ property.description|linebreaks }}</p>
+            </div>
+            {% endif %}
+
+            <!-- الخريطة -->
+            {% if property.latitude and property.longitude %}
+            <div class="info-card">
+                <h5 class="info-title"><i class="bi bi-map"></i> الموقع</h5>
+                <div id="property-map" style="height: 300px; border-radius: 20px;"></div>
+            </div>
+            {% endif %}
+
+            <!-- التقييمات -->
+            <div class="info-card">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h5 class="info-title mb-0"><i class="bi bi-star-fill"></i> التقييمات ({{ reviews.count }})</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rating-stars">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= avg_rating|floatformat:"0" %}<i class="bi bi-star-fill"></i>
+                                {% elif forloop.counter <= avg_rating|add:"0.5" %}<i class="bi bi-star-half"></i>
+                                {% else %}<i class="bi bi-star"></i>{% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="fw-bold">{{ avg_rating|floatformat:1 }}/5</span>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated %}
+                    {% if user_review %}
+                        <div class="alert alert-info mt-3">✅ لقد قمت بتقييم هذا العقار مسبقاً.</div>
+                    {% else %}
+                        <button class="btn btn-outline-primary-custom mt-3" data-bs-toggle="collapse" data-bs-target="#reviewForm">
+                            <i class="bi bi-pencil"></i> أضف تقييمك
+                        </button>
+                        <div class="collapse mt-3" id="reviewForm">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="submit_review" value="1">
+                                {{ review_form.as_p }}
+                                <button type="submit" class="btn btn-primary-custom mt-2">نشر التقييم</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="mt-3"><a href="{% url 'accounts:login' %}?next={{ request.path }}">سجل الدخول</a> لإضافة تقييم.</p>
+                {% endif %}
+
+                <div class="mt-4">
+                    {% for review in reviews|slice:":5" %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong><i class="bi bi-person-circle"></i> {{ review.user.username }}</strong>
+                            <div class="rating-stars small">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star"></i>{% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="mt-1">{{ review.comment }}</p>
+                        <small class="text-muted"><i class="bi bi-calendar"></i> {{ review.created_at|date:"d/m/Y" }}</small>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">لا توجد تقييمات بعد. كن أول من يقيم!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- العمود الجانبي -->
+        <div class="col-lg-4">
+            <!-- معلومات البائع -->
+            <div class="info-card seller-card">
+                {% if property.owner.avatar %}
+                    <img src="{{ property.owner.avatar.url }}" class="seller-avatar" alt="{{ property.owner.username }}">
+                {% else %}
+                    <div class="seller-avatar bg-secondary d-inline-flex align-items-center justify-content-center mx-auto">
+                        <i class="bi bi-person-fill text-white fs-1"></i>
+                    </div>
+                {% endif %}
+                <h5 class="mt-2">{{ property.owner.get_full_name|default:property.owner.username }}</h5>
+                <p class="text-muted small">{{ property.owner.email }}</p>
+                {% if property.owner.phone %}
+                    <p><i class="bi bi-telephone-fill text-primary"></i> {{ property.owner.phone }}</p>
+                {% endif %}
+                <hr>
+                <div class="d-grid gap-2">
+                    <button class="favorite-btn btn {% if property.id in user_favorites %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm rounded-pill"
+                            id="favoriteBtn" data-property-id="{{ property.id }}">
+                        <i class="bi {% if property.id in user_favorites %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                        {% if property.id in user_favorites %}تمت الإضافة{% else %}أضف للمفضلة{% endif %}
+                    </button>
+                    {% if property.owner.phone %}
+                        <a href="https://wa.me/{{ property.owner.phone }}" class="btn btn-success rounded-pill" target="_blank">
+                            <i class="bi bi-whatsapp"></i> واتساب
+                        </a>
+                        <a href="tel:{{ property.owner.phone }}" class="btn btn-primary rounded-pill">
+                            <i class="bi bi-telephone"></i> اتصل الآن
+                        </a>
+                    {% endif %}
+                    <a href="mailto:{{ property.owner.email }}" class="btn btn-primary-custom">
+                        <i class="bi bi-envelope"></i> مراسلة
+                    </a>
+                    {% if user.is_authenticated and user == property.owner %}
+                        <a href="{% url 'properties:property_edit' property.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-pencil"></i> تعديل
+                        </a>
+                        <a href="{% url 'properties:property_delete' property.id %}" class="btn btn-outline-danger" onclick="return confirm('هل أنت متأكد من حذف هذا العقار؟')">
+                            <i class="bi bi-trash"></i> حذف
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- إحصائيات — المشاهدات والتقييمات فقط (التاريخ في معلومات تفصيلية) -->
+            <div class="info-card">
+                <h5 class="info-title"><i class="bi bi-graph-up"></i> إحصائيات</h5>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span><i class="bi bi-eye"></i> المشاهدات</span>
+                    <span class="fw-bold">{{ property.views_count|intcomma }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span><i class="bi bi-star"></i> التقييمات</span>
+                    <span class="fw-bold">{{ reviews.count }}</span>
+                </div>
+            </div>
+
+            <!-- عقارات مشابهة -->
+            {% if similar_properties %}
+            <div class="info-card">
+                <h5 class="info-title"><i class="bi bi-diagram-3"></i> عقارات مشابهة</h5>
+                {% for similar in similar_properties|slice:":3" %}
+                <a href="{% url 'properties:property_detail' similar.id %}" class="text-decoration-none">
+                    <div class="similar-card">
+                        {% if similar.image %}
+                            <img src="{{ similar.image.url }}" class="similar-img" alt="{{ similar.title }}" loading="lazy">
+                        {% else %}
+                            <div class="similar-img bg-secondary d-flex align-items-center justify-content-center">
+                                <i class="bi bi-building text-white"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ similar.title|truncatechars:25 }}</h6>
+                            <div class="similar-price">{{ similar.price|floatformat:0|intcomma }} دج</div>
+                            <small class="text-muted">{{ similar.wilaya|default:"الجزائر" }}</small>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // معرض الصور — يُهيَّأ thumbSwiper أولاً ثم mainSwiper
+        const thumbSwiper = new Swiper('.thumb-swiper', {
+            loop: false,
+            spaceBetween: 10,
+            slidesPerView: 4,
+            freeMode: true,
+            watchSlidesProgress: true,
+        });
+
+        new Swiper('.main-swiper', {
+            loop: true,
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            thumbs: { swiper: thumbSwiper },
+        });
+
+        // الخريطة
+        {% if property.latitude and property.longitude %}
+        const map = L.map('property-map').setView([{{ property.latitude }}, {{ property.longitude }}], 15);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        L.marker([{{ property.latitude }}, {{ property.longitude }}]).addTo(map)
+            .bindPopup('<b>{{ property.title }}</b><br>{{ property.price|floatformat:0|intcomma }} دج')
+            .openPopup();
+        {% endif %}
+
+        // المفضلة
+        const favBtn = document.getElementById('favoriteBtn');
+        if (favBtn) {
+            favBtn.addEventListener('click', function() {
+                const propertyId = this.dataset.propertyId;
+                fetch(`/properties/toggle-favorite/${propertyId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_favorited) {
+                        this.classList.remove('btn-outline-danger');
+                        this.classList.add('btn-danger');
+                        this.innerHTML = '<i class="bi bi-heart-fill"></i> تمت الإضافة';
+                    } else {
+                        this.classList.remove('btn-danger');
+                        this.classList.add('btn-outline-danger');
+                        this.innerHTML = '<i class="bi bi-heart"></i> أضف للمفضلة';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,10 @@
+[
+  {
+    "code": "16",
+    "name_ar": "الجزائر",
+    "name_fr": "Alger",
+    "communes": [
+      {"code": "1601", "name_ar": "الجزائر الوسطى", "name_fr": "Alger Centre"}
+    ]
+  }
+]

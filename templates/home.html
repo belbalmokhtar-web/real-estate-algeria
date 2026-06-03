@@ -1,0 +1,1222 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}الصفحة الرئيسية | منصة العقارات الأولى في الجزائر{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<style>
+    /* ========== المتغيرات العالمية ========== */
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --primary-light: #FFF0E8;
+        --primary-glow: rgba(255,107,53,0.2);
+        --secondary: #1A2C3E;
+        --secondary-light: #2D4A6E;
+        --accent: #00C9A7;
+        --accent-dark: #00A88B;
+        --gray-bg: #F9FAFB;
+        --white: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-muted: #64748B;
+        --border-light: #E2E8F0;
+        --card-shadow: 0 20px 35px -12px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.02);
+        --hover-shadow: 0 25px 40px -12px rgba(0,0,0,0.15);
+        --border-radius: 28px;
+        --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        --transition-slow: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    body {
+        font-family: 'Inter', 'Tajawal', sans-serif;
+        background: var(--gray-bg);
+        overflow-x: hidden;
+    }
+
+    /* ========== الخلفية الديناميكية ========== */
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -2;
+        overflow: hidden;
+    }
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: floatOrb 25s infinite alternate;
+    }
+
+    .orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--primary), transparent); top: -20%; right: -20%; }
+    .orb-2 { width: 40vw; height: 40vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -10%; left: -10%; animation-duration: 30s; }
+    .orb-3 { width: 30vw; height: 30vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 30%; left: 20%; animation-duration: 22s; opacity: 0.3; }
+
+    @keyframes floatOrb {
+        0% { transform: translate(0,0) scale(1); }
+        100% { transform: translate(3%, 3%) scale(1.08); }
+    }
+
+    .grid-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    /* ========== شريط البحث المتوازن ========== */
+    .search-hero {
+        background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        border-radius: 48px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .search-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        animation: rotate 20s infinite linear;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .search-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: 48px;
+        padding: 1.2rem;
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-card:hover {
+        background: rgba(255,255,255,0.98);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .search-input-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .search-input-group i {
+        position: absolute;
+        right: 16px;
+        color: var(--primary);
+        font-size: 1rem;
+        z-index: 2;
+    }
+
+    .search-input-group input,
+    .search-input-group select {
+        padding-right: 42px;
+        border-radius: 40px;
+        border: 1px solid var(--border-light);
+        background: white;
+        transition: var(--transition);
+        width: 100%;
+        height: 48px;
+        font-size: 0.9rem;
+    }
+
+    .search-input-group input:focus,
+    .search-input-group select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-glow);
+        outline: none;
+    }
+
+    .search-input-group select:disabled {
+        background-color: #f8f9fa;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .btn-search-main {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border-radius: 40px;
+        padding: 0.6rem 1rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: white;
+        height: 48px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        border: none;
+        box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    .btn-search-main:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,107,53,0.4);
+    }
+
+    .btn-reset-search {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        border: none;
+        border-radius: 40px;
+        padding: 0.6rem;
+        color: white;
+        font-weight: 600;
+        transition: var(--transition);
+        height: 48px;
+        width: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-reset-search:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(108,117,125,0.3);
+    }
+
+    .section-badge {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(4px);
+        padding: 0.3rem 1rem;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ========== بطاقات الإحصائيات ========== */
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card-modern {
+        background: white;
+        border-radius: 28px;
+        padding: 1rem 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .stat-card-modern:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--hover-shadow);
+        border-color: var(--primary-light);
+    }
+
+    .stat-icon-modern {
+        width: 55px;
+        height: 55px;
+        background: var(--primary-light);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.8rem;
+        transition: var(--transition);
+    }
+
+    .stat-card-modern:hover .stat-icon-modern {
+        transform: scale(1.05);
+        background: var(--primary);
+        color: white;
+    }
+
+    .stat-info h3 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 0;
+        color: var(--secondary);
+    }
+
+    .stat-info p {
+        margin: 0;
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    /* ========== بطاقات العقارات ========== */
+    .property-card-global {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        transition: var(--transition-slow);
+        box-shadow: var(--card-shadow);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border-light);
+        cursor: pointer;
+    }
+
+    .property-card-global:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+        border-color: var(--primary);
+    }
+
+    .property-img-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 200px;
+        background: #f0f0f0;
+    }
+
+    .property-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+
+    .property-card-global:hover .property-img-wrapper img {
+        transform: scale(1.08);
+    }
+
+    .property-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 0.3rem 0.8rem;
+        border-radius: 40px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 2;
+        backdrop-filter: blur(4px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .property-badge.featured {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+
+    .badge-sale {
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white;
+    }
+
+    .badge-rent {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+    }
+
+    .property-body {
+        padding: 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .property-price {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .property-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+        line-height: 1.4;
+        color: var(--secondary);
+    }
+
+    .property-location {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-bottom: 0.3rem;
+    }
+
+    .property-features {
+        display: flex;
+        gap: 0.6rem;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin: 0.3rem 0;
+    }
+
+    /* ========== الأزرار ========== */
+    .btn-outline-primary-custom {
+        border: 1px solid var(--primary);
+        border-radius: 40px;
+        padding: 0.4rem 1rem;
+        font-weight: 500;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--primary);
+        text-align: center;
+        display: inline-block;
+        text-decoration: none;
+        font-size: 0.8rem;
+    }
+
+    .btn-outline-primary-custom:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        border-radius: 40px;
+        padding: 0.5rem 1.2rem;
+        font-weight: 600;
+        transition: var(--transition);
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary-custom:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255,107,53,0.3);
+    }
+
+    /* ========== البطاقات الأخرى ========== */
+    .step-card, .feature-card, .testimonial-card-modern {
+        background: white;
+        border-radius: 24px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: var(--transition);
+        height: 100%;
+        box-shadow: var(--card-shadow);
+        border: 1px solid transparent;
+    }
+
+    .step-card:hover, .feature-card:hover, .testimonial-card-modern:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--hover-shadow);
+        border-color: var(--primary);
+    }
+
+    .step-number {
+        width: 50px;
+        height: 50px;
+        background: var(--primary-light);
+        color: var(--primary);
+        border-radius: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin: 0 auto 1rem;
+        transition: var(--transition);
+    }
+
+    .step-card:hover .step-number {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .feature-icon {
+        font-size: 2.2rem;
+        color: var(--primary);
+        margin-bottom: 0.8rem;
+    }
+
+    /* ========== الخريطة ========== */
+    .map-container {
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+    }
+
+    .map-container:hover {
+        box-shadow: var(--hover-shadow);
+    }
+
+    /* ========== مؤشر التحميل ========== */
+    .loading-spinner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: var(--primary);
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ========== زر العودة للأعلى ========== */
+    #back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        border: none;
+        cursor: pointer;
+        z-index: 1000;
+        transition: var(--transition);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    #back-to-top:hover {
+        background: var(--primary-dark);
+        transform: translateY(-3px);
+    }
+
+    /* ========== الولايات المقترحة ========== */
+    .wilaya-suggestion {
+        cursor: pointer;
+        transition: var(--transition);
+        background: rgba(255,255,255,0.9);
+        font-size: 0.7rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 40px;
+    }
+
+    .wilaya-suggestion:hover {
+        background: var(--primary);
+        color: white !important;
+        transform: translateY(-2px);
+    }
+
+    /* ========== الوضع الليلي ========== */
+    body.dark-mode {
+        --gray-bg: #0F172A;
+        --white: #1E293B;
+        --text-dark: #F1F5F9;
+        --text-muted: #94A3B8;
+        --border-light: #334155;
+    }
+
+    body.dark-mode .stat-card-modern,
+    body.dark-mode .property-card-global,
+    body.dark-mode .step-card,
+    body.dark-mode .feature-card,
+    body.dark-mode .testimonial-card-modern {
+        background: #1E293B;
+        border-color: #334155;
+    }
+
+    body.dark-mode .stat-info h3,
+    body.dark-mode .property-title {
+        color: #F1F5F9;
+    }
+
+    body.dark-mode .search-card {
+        background: rgba(30,41,59,0.95);
+    }
+
+    body.dark-mode .wilaya-suggestion {
+        background: rgba(30,41,59,0.8);
+        color: #E2E8F0 !important;
+    }
+
+    body.dark-mode .wilaya-suggestion:hover {
+        background: var(--primary);
+        color: white !important;
+    }
+
+    /* ========== تحسينات التجاوب ========== */
+    @media (max-width: 992px) {
+        .search-hero {
+            padding: 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .search-hero {
+            padding: 1rem;
+        }
+        .search-card {
+            border-radius: 28px;
+            padding: 0.8rem;
+        }
+        .stat-icon-modern {
+            width: 45px;
+            height: 45px;
+            font-size: 1.4rem;
+        }
+        .stat-info h3 {
+            font-size: 1.2rem;
+        }
+        .property-img-wrapper {
+            height: 160px;
+        }
+        .btn-search-main, .btn-reset-search {
+            height: 42px;
+        }
+        .search-input-group input,
+        .search-input-group select {
+            height: 42px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stat-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- مؤشر التحميل -->
+<div id="loadingSpinner" class="loading-spinner">
+    <div class="spinner"></div>
+</div>
+
+<div class="home-wrapper">
+    <div class="animated-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <div class="container my-3">
+        <!-- رسالة ترحيب للمستخدمين الجدد -->
+        {% if user.is_authenticated and user.login_count == 1 %}
+        <div class="alert alert-success alert-dismissible fade show rounded-4 mb-3 shadow-sm" role="alert">
+            <i class="bi bi-emoji-smile-fill fs-5 me-2"></i>
+            <strong>مرحباً {{ user.username }}!</strong> نرحب بك في منصتنا. استكشف آلاف العقارات وابدأ رحلتك العقارية.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
+        <!-- 1. شريط بحث متوازن -->
+<div class="search-hero" data-aos="fade-up" data-aos-duration="800">
+    <div class="row align-items-center">
+        <div class="col-lg-2 text-center text-lg-start mb-3 mb-lg-0">
+            <h2 class="fw-bold text-white fs-3 mb-1">ابحث عن عقارك</h2>
+            <p class="text-white-50 small">أكثر من {{ total_properties|default:"1000"|intcomma }} عقار</p>
+        </div>
+        <div class="col-lg-10">
+            <div class="search-card">
+                <form method="get" action="{% url 'properties:property_list' %}" id="searchForm">
+                    <!-- الصف الأول: الموقع -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-5">
+                            <div class="search-input-group">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <select name="wilaya" class="form-select" id="wilayaSelect">
+                                    <option value="">جميع الولايات</option>
+                                    {% for wilaya in wilayas %}
+                                    <option value="{{ wilaya.id }}" data-code="{{ wilaya.code }}"
+                                            {% if request.GET.wilaya == wilaya.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ wilaya.name_ar }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="search-input-group">
+                                <i class="bi bi-pin-map-fill"></i>
+                                <select name="commune" class="form-select" id="communeSelect">
+                                    <option value="">جميع البلديات</option>
+                                    {% if communes %}
+                                    {% for commune in communes %}
+                                    <option value="{{ commune.id }}" {% if request.GET.commune == commune.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ commune.name_ar }}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn-search-main w-100">
+                                <i class="bi bi-search"></i> بحث
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- الصف الثاني: نوع العقار ونوع العملية -->
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="search-input-group">
+                                <i class="bi bi-house-door"></i>
+                                <select name="property_type" class="form-select">
+                                    <option value="">نوع العقار</option>
+                                    <option value="apartment" {% if request.GET.property_type == 'apartment' %}selected{% endif %}>شقة</option>
+                                    <option value="house" {% if request.GET.property_type == 'house' %}selected{% endif %}>منزل</option>
+                                    <option value="villa" {% if request.GET.property_type == 'villa' %}selected{% endif %}>فيلا</option>
+                                    <option value="land" {% if request.GET.property_type == 'land' %}selected{% endif %}>أرض</option>
+                                    <option value="commercial" {% if request.GET.property_type == 'commercial' %}selected{% endif %}>محل تجاري</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="search-input-group">
+                                <i class="bi bi-tag"></i>
+                                <select name="listing_type" class="form-select">
+                                    <option value="">نوع العملية</option>
+                                    <option value="sale" {% if request.GET.listing_type == 'sale' %}selected{% endif %}>للبيع</option>
+                                    <option value="rent" {% if request.GET.listing_type == 'rent' %}selected{% endif %}>للإيجار</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="search-input-group">
+                                <i class="bi bi-cash-stack"></i>
+                                <select name="price_range" class="form-select">
+                                    <option value="">جميع الأسعار</option>
+                                    <option value="0-5000000">أقل من 5 مليون</option>
+                                    <option value="5000000-10000000">5 - 10 مليون</option>
+                                    <option value="10000000-20000000">10 - 20 مليون</option>
+                                    <option value="20000000-50000000">20 - 50 مليون</option>
+                                    <option value="50000000-100000000">50 - 100 مليون</option>
+                                    <option value="100000000-999999999">أكثر من 100 مليون</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- الولايات الأكثر نشاطاً -->
+                {% if wilayas_stats %}
+                <div class="mt-3 pt-2 border-top">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="text-muted small"><i class="bi bi-fire"></i> الولايات الأكثر طلباً:</span>
+                        {% for stat in wilayas_stats|slice:":6" %}
+                        <button type="button" class="wilaya-suggestion btn-sm"
+                                data-wilaya-id="{{ stat.id }}"
+                                onclick="searchByWilaya({{ stat.id }}, '{{ stat.name }}')">
+                            📍 {{ stat.name }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- 2. إحصائيات السوق -->
+        <div class="stat-grid" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card-modern" onclick="window.location.href='{% url 'properties:property_list' %}'">
+                <div class="stat-icon-modern"><i class="bi bi-house-door-fill"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_properties|default:"0"|intcomma }}+</h3>
+                    <p>عقار معروض</p>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern"><i class="bi bi-cash-stack"></i></div>
+                <div class="stat-info">
+                    <h3>{{ avg_price|default:"0"|floatformat:0|intcomma }} دج</h3>
+                    <p>متوسط السعر</p>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern"><i class="bi bi-rulers"></i></div>
+                <div class="stat-info">
+                    <h3>{{ avg_price_per_sqm|default:"0"|floatformat:0|intcomma }} دج/م²</h3>
+                    <p>متوسط السعر للمتر</p>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-modern"><i class="bi bi-pin-map-fill"></i></div>
+                <div class="stat-info">
+                    <h3>{{ total_cities|default:"58" }}</h3>
+                    <p>ولاية مغطاة</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. عقارات مميزة -->
+        {% if featured_properties %}
+        <div class="mb-5" data-aos="fade-up" data-aos-delay="150">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold fs-5">
+                    <i class="bi bi-star-fill text-warning"></i> عقارات مميزة
+                </h3>
+                <a href="{% url 'properties:property_list' %}?is_featured=true" class="btn-outline-primary-custom">
+                    عرض الكل <i class="bi bi-arrow-left-short"></i>
+                </a>
+            </div>
+            <div class="row g-3">
+                {% for prop in featured_properties %}
+                <div class="col-lg-4 col-md-6" data-aos="zoom-in" data-aos-delay="{{ forloop.counter|add:150 }}">
+                    <div class="property-card-global" onclick="window.location.href='{% url 'properties:property_detail' prop.id %}'">
+                        <div class="property-img-wrapper">
+                            {% if prop.image %}
+                                <img src="{{ prop.image.url }}" alt="{{ prop.title }}" loading="lazy">
+                            {% else %}
+                                <div class="bg-light h-100 d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-building fs-1 text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <span class="property-badge featured">
+                                <i class="bi bi-star-fill"></i> مميز
+                            </span>
+                        </div>
+                        <div class="property-body">
+                            <div class="property-price">{{ prop.price|floatformat:0|intcomma }} دج</div>
+                            <h5 class="property-title">{{ prop.title|truncatechars:35 }}</h5>
+                            <div class="property-location">
+                                <i class="bi bi-geo-alt"></i> {{ prop.wilaya|default:"الجزائر" }}
+                            </div>
+                            <div class="property-features">
+                                <span><i class="bi bi-rulers"></i> {{ prop.area_sqm }} م²</span>
+                                <span><i class="bi bi-door-closed"></i> {{ prop.bedrooms|default:"0" }}</span>
+                                <span><i class="bi bi-droplet"></i> {{ prop.bathrooms|default:"0" }}</span>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'properties:property_detail' prop.id %}" class="btn-primary-custom w-100 d-block text-center">
+                                    تفاصيل العقار
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 4. أحدث العقارات -->
+        <div class="mb-5" data-aos="fade-up" data-aos-delay="200">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold fs-5">
+                    <i class="bi bi-clock-history text-primary"></i> أحدث العقارات
+                </h3>
+                <a href="{% url 'properties:property_list' %}" class="btn-outline-primary-custom">
+                    عرض الكل <i class="bi bi-arrow-left-short"></i>
+                </a>
+            </div>
+            {% if latest_properties %}
+            <div class="row g-3">
+                {% for prop in latest_properties %}
+                <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:200 }}">
+                    <div class="property-card-global" onclick="window.location.href='{% url 'properties:property_detail' prop.id %}'">
+                        <div class="property-img-wrapper">
+                            {% if prop.image %}
+                                <img src="{{ prop.image.url }}" alt="{{ prop.title }}" loading="lazy">
+                            {% else %}
+                                <div class="bg-light h-100 d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-building fs-1 text-muted"></i>
+                                </div>
+                            {% endif %}
+                            {% if prop.listing_type == 'sale' %}
+                                <span class="property-badge badge-sale">
+                                    <i class="bi bi-tag"></i> {{ prop.get_listing_type_display|default:"للبيع" }}
+                                </span>
+                            {% elif prop.listing_type == 'rent' %}
+                                <span class="property-badge badge-rent">
+                                    <i class="bi bi-calendar"></i> {{ prop.get_listing_type_display|default:"للإيجار" }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="property-body">
+                            <div class="property-price">{{ prop.price|floatformat:0|intcomma }} دج</div>
+                            <h5 class="property-title">{{ prop.title|truncatechars:35 }}</h5>
+                            <div class="property-location">
+                                <i class="bi bi-geo-alt"></i> {{ prop.wilaya|default:"الجزائر" }}
+                            </div>
+                            <div class="property-features">
+                                <span><i class="bi bi-rulers"></i> {{ prop.area_sqm }} م²</span>
+                                <span><i class="bi bi-door-closed"></i> {{ prop.bedrooms|default:"0" }}</span>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'properties:property_detail' prop.id %}" class="btn-outline-primary-custom w-100 d-block">
+                                    تفاصيل
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center rounded-4">
+                <i class="bi bi-info-circle"></i> لا توجد عقارات حالياً.
+                <a href="{% url 'properties:property_create' %}" class="alert-link">أضف أول عقار</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 5. كيف تعمل المنصة -->
+        <div class="row g-3 mb-5" data-aos="fade-up" data-aos-delay="250">
+            <div class="col-12 text-center mb-2">
+                <h3 class="fw-bold fs-4">كيف تعمل المنصة؟</h3>
+                <p class="text-muted">ثلاث خطوات بسيطة لتحقيق هدفك العقاري</p>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <i class="bi bi-search fs-3 text-primary mb-2 d-block"></i>
+                    <h5 class="fs-6 fw-bold">ابحث عن عقار</h5>
+                    <p class="small text-muted">استخدم محرك البحث المتقدم للعثور على عقارك المثالي</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <i class="bi bi-chat-dots fs-3 text-primary mb-2 d-block"></i>
+                    <h5 class="fs-6 fw-bold">تواصل مع المالك</h5>
+                    <p class="small text-muted">يمكنك مراسلة المالك مباشرة أو الوكيل المعتمد</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <i class="bi bi-check-circle fs-3 text-primary mb-2 d-block"></i>
+                    <h5 class="fs-6 fw-bold">أكمل الصفقة</h5>
+                    <p class="small text-muted">استخدم نظام الدفع الآمن لإتمام المعاملة</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. خريطة العقارات التفاعلية -->
+        <div class="mb-5" data-aos="fade-up" data-aos-delay="300">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-transparent border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fs-6">
+                        <i class="bi bi-map-fill text-primary"></i> خريطة العقارات المتاحة
+                    </h5>
+                    <div>
+                        <button id="fullscreen-map-btn" class="btn btn-sm btn-outline-secondary rounded-pill">
+                            <i class="bi bi-arrows-fullscreen"></i> ملء الشاشة
+                        </button>
+                    </div>
+                </div>
+                <div class="map-container">
+                    <div id="main-map" style="height: 400px; width: 100%; background: #e9ecef;"></div>
+                </div>
+                <div class="card-footer bg-transparent text-center py-2">
+                    <a href="{% url 'properties:property_map' %}" class="btn btn-primary-custom btn-sm">
+                        <i class="bi bi-map"></i> عرض الخريطة الكاملة
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. تصفح حسب الفئة -->
+        <div class="row g-2 mb-5" data-aos="fade-up" data-aos-delay="350">
+            <div class="col-12 text-center mb-3">
+                <h3 class="fw-bold fs-5">
+                    <i class="bi bi-grid-3x3-gap-fill text-warning"></i> تصفح حسب الفئة
+                </h3>
+            </div>
+            <div class="col-md-2 col-4 col-sm-3">
+                <a href="{% url 'properties:property_list' %}?property_type=apartment" class="btn-outline-primary-custom w-100 d-block py-2">
+                    <i class="bi bi-building"></i> شقة
+                </a>
+            </div>
+            <div class="col-md-2 col-4 col-sm-3">
+                <a href="{% url 'properties:property_list' %}?property_type=house" class="btn-outline-primary-custom w-100 d-block py-2">
+                    <i class="bi bi-house-door"></i> منزل
+                </a>
+            </div>
+            <div class="col-md-2 col-4 col-sm-3">
+                <a href="{% url 'properties:property_list' %}?property_type=villa" class="btn-outline-primary-custom w-100 d-block py-2">
+                    <i class="bi bi-tree-fill"></i> فيلا
+                </a>
+            </div>
+            <div class="col-md-2 col-4 col-sm-3">
+                <a href="{% url 'properties:property_list' %}?property_type=land" class="btn-outline-primary-custom w-100 d-block py-2">
+                    <i class="bi bi-pin-map-fill"></i> أرض
+                </a>
+            </div>
+            <div class="col-md-2 col-4 col-sm-3">
+                <a href="{% url 'properties:property_list' %}?property_type=commercial" class="btn-outline-primary-custom w-100 d-block py-2">
+                    <i class="bi bi-shop"></i> محلات
+                </a>
+            </div>
+            <div class="col-md-2 col-4 col-sm-3">
+                <a href="{% url 'properties:property_list' %}?property_type=office" class="btn-outline-primary-custom w-100 d-block py-2">
+                    <i class="bi bi-briefcase"></i> مكاتب
+                </a>
+            </div>
+        </div>
+
+        <!-- 8. مميزات المنصة -->
+        <div class="row g-3 mb-5" data-aos="fade-up" data-aos-delay="400">
+            <div class="col-12 text-center mb-3">
+                <h3 class="fw-bold fs-5">
+                    <i class="bi bi-stars"></i> مميزات منصتنا
+                </h3>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="bi bi-search-heart"></i></div>
+                    <h5 class="fs-6 fw-bold">بحث ذكي</h5>
+                    <p class="small text-muted">فلترة متقدمة ونتائج فورية</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
+                    <h5 class="fs-6 fw-bold">نظام إحالة</h5>
+                    <p class="small text-muted">اربح نقاطاً عند مشاركة الروابط</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="bi bi-people"></i></div>
+                    <h5 class="fs-6 fw-bold">وكلاء معتمدون</h5>
+                    <p class="small text-muted">خبراء في كل الولايات</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                    <h5 class="fs-6 fw-bold">آمن وموثوق</h5>
+                    <p class="small text-muted">بياناتك في أمان تام</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. شهادات العملاء -->
+        <div class="row g-3 mb-5" data-aos="fade-up" data-aos-delay="450">
+            <div class="col-12 text-center mb-3">
+                <h3 class="fw-bold fs-5">
+                    <i class="bi bi-chat-quote-fill text-primary"></i> ماذا يقول عملاؤنا
+                </h3>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card-modern">
+                    <i class="bi bi-person-circle fs-2 text-primary"></i>
+                    <p class="mt-2 small fst-italic">"تجربة رائعة وسهلة. وجدت منزل أحلامي بفضل المنصة."</p>
+                    <h6 class="mb-0 fs-6 fw-bold">أحمد خالد</h6>
+                    <small class="text-muted">عميل</small>
+                    <div class="mt-1 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card-modern">
+                    <i class="bi bi-person-circle fs-2 text-success"></i>
+                    <p class="mt-2 small fst-italic">"أفضل منصة عقارية في الجزائر. أنصح بها الجميع."</p>
+                    <h6 class="mb-0 fs-6 fw-bold">سارة بن عمر</h6>
+                    <small class="text-muted">مستثمرة</small>
+                    <div class="mt-1 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-half"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card-modern">
+                    <i class="bi bi-person-circle fs-2 text-warning"></i>
+                    <p class="mt-2 small fst-italic">"خدمة عملاء ممتازة وعقارات متنوعة بأسعار منافسة."</p>
+                    <h6 class="mb-0 fs-6 fw-bold">محمد رضا</h6>
+                    <small class="text-muted">مشتري</small>
+                    <div class="mt-1 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- زر العودة للأعلى -->
+<button id="back-to-top" class="btn btn-primary-custom rounded-circle">
+    <i class="bi bi-arrow-up"></i>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 50,
+            easing: 'ease-in-out'
+        });
+
+        // ========== تحميل البلديات ديناميكياً ==========
+        const wilayaSelect = document.getElementById('wilayaSelect');
+        const communeSelect = document.getElementById('communeSelect');
+
+        if (wilayaSelect && communeSelect) {
+            wilayaSelect.addEventListener('change', function() {
+                const wilayaId = this.value;
+                communeSelect.disabled = true;
+                communeSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+
+                if (wilayaId) {
+                    fetch(`/properties/api/load-communes/?wilaya_id=${wilayaId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            communeSelect.innerHTML = '<option value="">جميع البلديات</option>';
+                            if (data.communes && data.communes.length > 0) {
+                                data.communes.forEach(commune => {
+                                    const option = document.createElement('option');
+                                    option.value = commune.id;
+                                    option.textContent = commune.name;
+                                    communeSelect.appendChild(option);
+                                });
+                            }
+                            communeSelect.disabled = false;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            communeSelect.innerHTML = '<option value="">جميع البلديات</option>';
+                            communeSelect.disabled = false;
+                        });
+                } else {
+                    communeSelect.innerHTML = '<option value="">جميع البلديات</option>';
+                    communeSelect.disabled = false;
+                }
+            });
+
+            if (wilayaSelect.value) {
+                wilayaSelect.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // ========== البحث حسب الولاية ==========
+        window.searchByWilaya = function(wilayaId, wilayaName) {
+            const form = document.getElementById('searchForm');
+            const wilayaSelect = document.getElementById('wilayaSelect');
+            if (form && wilayaSelect) {
+                wilayaSelect.value = wilayaId;
+                form.submit();
+            }
+        };
+
+        // ========== مسح الفلاتر ==========
+        const resetBtn = document.getElementById('resetFiltersBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                const form = document.getElementById('searchForm');
+                if (form) {
+                    form.reset();
+                    const communeSelect = document.getElementById('communeSelect');
+                    if (communeSelect) {
+                        communeSelect.innerHTML = '<option value="">جميع البلديات</option>';
+                        communeSelect.disabled = false;
+                    }
+                    form.submit();
+                }
+            });
+        }
+
+        // ========== إعداد الخريطة ==========
+        let map = L.map('main-map').setView([36.7538, 3.0588], 7);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const properties = {{ properties_json|default:'[]'|safe }};
+        if (properties.length > 0) {
+            properties.forEach(property => {
+                if (property.lat && property.lng) {
+                    L.marker([property.lat, property.lng])
+                        .addTo(map)
+                        .bindPopup(`
+                            <div style="min-width: 200px;">
+                                <strong>${property.title}</strong><br>
+                                <span class="text-primary">${property.price.toLocaleString()} دج</span><br>
+                                <small>${property.wilaya}</small><br>
+                                <a href="/properties/${property.id}/" class="btn btn-sm btn-primary mt-2">تفاصيل</a>
+                            </div>
+                        `);
+                }
+            });
+        }
+
+        // زر ملء الشاشة
+        const fullscreenBtn = document.getElementById('fullscreen-map-btn');
+        const mapContainer = document.getElementById('main-map');
+        if (fullscreenBtn && mapContainer) {
+            fullscreenBtn.addEventListener('click', () => {
+                if (mapContainer.requestFullscreen) mapContainer.requestFullscreen();
+                setTimeout(() => map.invalidateSize(), 100);
+            });
+        }
+
+        // زر العودة للأعلى
+        const backToTop = document.getElementById('back-to-top');
+        if (backToTop) {
+            window.addEventListener('scroll', () => {
+                backToTop.style.display = window.scrollY > 300 ? 'block' : 'none';
+            });
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // الوضع الليلي
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    });
+</script>
+{% endblock %}

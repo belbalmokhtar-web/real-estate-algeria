@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ projet.nom_projet }} | مشروع عقاري - FGCMPI{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<style>
+    :root {
+        --pf-primary: #0a2b4e;
+        --pf-primary-light: #1a4a7a;
+        --pf-accent: #2ecc71;
+        --pf-accent-dark: #27ae60;
+        --pf-accent-light: #d5f5e3;
+        --pf-gray-bg: #f8fafc;
+        --pf-gray-border: #e9ecef;
+        --pf-text-dark: #1e2a3a;
+        --pf-text-muted: #64748b;
+        --pf-shadow: 0 12px 30px rgba(0,0,0,0.05);
+        --pf-shadow-hover: 0 20px 35px rgba(0,0,0,0.1);
+        --pf-transition: all 0.3s ease;
+    }
+
+    /* ========== هيدر المشروع ========== */
+    .project-hero {
+        background: linear-gradient(135deg, var(--pf-primary) 0%, var(--pf-primary-light) 100%);
+        padding: 3rem 0;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .project-hero::before {
+        content: "🏗️";
+        position: absolute;
+        font-size: 12rem;
+        opacity: 0.05;
+        bottom: -3rem;
+        right: -2rem;
+        transform: rotate(-10deg);
+        pointer-events: none;
+    }
+    .project-icon {
+        width: 90px;
+        height: 90px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        color: var(--pf-accent);
+        font-size: 2.5rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        transition: var(--pf-transition);
+    }
+    .project-icon:hover {
+        transform: scale(1.05);
+    }
+    .info-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255,255,255,0.1);
+        padding: 0.3rem 0.8rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+    }
+
+    /* ========== بطاقات المعلومات ========== */
+    .info-card {
+        background: white;
+        border-radius: 24px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--pf-shadow);
+        border: 1px solid var(--pf-gray-border);
+        transition: var(--pf-transition);
+    }
+    .info-card:hover {
+        box-shadow: var(--pf-shadow-hover);
+    }
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid var(--pf-accent);
+        display: inline-block;
+        color: var(--pf-primary);
+    }
+
+    /* ========== توزيع الوحدات ========== */
+    .type-badge {
+        display: inline-block;
+        background: var(--pf-gray-bg);
+        padding: 0.75rem 1rem;
+        border-radius: 16px;
+        margin: 0.25rem;
+        text-align: center;
+        min-width: 85px;
+        transition: var(--pf-transition);
+    }
+    .type-badge:hover {
+        background: var(--pf-accent-light);
+        transform: translateY(-3px);
+    }
+    .type-number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--pf-accent);
+        line-height: 1;
+    }
+    .type-label {
+        font-size: 0.7rem;
+        color: var(--pf-text-muted);
+        margin-top: 0.25rem;
+    }
+    .total-badge {
+        background: linear-gradient(135deg, var(--pf-accent), var(--pf-accent-dark));
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 40px;
+        display: inline-block;
+    }
+
+    /* ========== جدول المعلومات ========== */
+    .info-table {
+        width: 100%;
+    }
+    .info-table td {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--pf-gray-border);
+    }
+    .info-table tr:last-child td {
+        border-bottom: none;
+    }
+    .info-label {
+        width: 140px;
+        font-weight: 600;
+        color: var(--pf-primary);
+    }
+    .info-value {
+        color: var(--pf-text-dark);
+    }
+
+    /* ========== بطاقة المطور ========== */
+    .developer-card {
+        background: linear-gradient(135deg, var(--pf-primary-light), var(--pf-primary));
+        color: white;
+        text-align: center;
+    }
+    .developer-card .btn-outline-light {
+        border-color: rgba(255,255,255,0.3);
+        color: white;
+    }
+    .developer-card .btn-outline-light:hover {
+        background: white;
+        color: var(--pf-primary);
+        border-color: white;
+    }
+
+    /* ========== استجابة للجوال ========== */
+    @media (max-width: 768px) {
+        .project-hero { padding: 2rem 0; }
+        .project-icon { width: 60px; height: 60px; font-size: 1.8rem; }
+        .project-hero h1 { font-size: 1.3rem; }
+        .type-badge { min-width: 70px; padding: 0.5rem; }
+        .type-number { font-size: 1.2rem; }
+        .info-label { width: 100px; font-size: 0.85rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ========== هيدر المشروع ========== -->
+<div class="project-hero" data-aos="fade-down">
+    <div class="container">
+        <div class="row align-items-center gy-4">
+            <div class="col-md-2 text-center text-md-start">
+                <div class="project-icon mx-auto mx-md-0">
+                    <i class="fas fa-building"></i>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h1 class="fw-bold mb-2">{{ projet.nom_projet }}</h1>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="info-chip">
+                        <i class="fas fa-hard-hat"></i>
+                        <a href="{% url 'properties:promoteur_detail' promoteur.id %}" class="text-white text-decoration-none">
+                            {{ promoteur.nom_entreprise }}
+                        </a>
+                    </span>
+                    <span class="info-chip">
+                        <i class="fas fa-map-marker-alt"></i> {{ projet.localisation|truncatechars:60 }}
+                    </span>
+                    {% if projet.date_garantie %}
+                    <span class="info-chip">
+                        <i class="fas fa-calendar-check"></i> ضمان: {{ projet.date_garantie|date:"Y" }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== المحتوى الرئيسي ========== -->
+<div class="container my-5">
+    <div class="row g-4">
+        <!-- العمود الأيمن (المحتوى الرئيسي) -->
+        <div class="col-lg-8">
+            <!-- توزيع الوحدات السكنية -->
+            <div class="info-card" data-aos="fade-up">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-pie me-2"></i> توزيع الوحدات السكنية
+                </h3>
+
+                {% if type_counts %}
+                <div class="d-flex flex-wrap justify-content-start g-2 mb-4">
+                    {% for type, count in type_counts.items %}
+                    <div class="type-badge">
+                        <div class="type-number">{{ count }}</div>
+                        <div class="type-label">{{ type }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-light text-center py-3">
+                    <i class="fas fa-info-circle"></i> لا توجد وحدات مسجلة لهذا المشروع
+                </div>
+                {% endif %}
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <div class="total-badge">
+                        <i class="fas fa-home me-2"></i>
+                        إجمالي الوحدات: <strong>{{ total_logements|default:"0"|intcomma }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- معلومات إضافية عن المشروع -->
+            <div class="info-card" data-aos="fade-up" data-aos-delay="100">
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle me-2"></i> معلومات المشروع
+                </h3>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label"><i class="fas fa-calendar-alt text-success me-2"></i> تاريخ الضمان:</td>
+                        <td class="info-value">{{ projet.date_garantie|date:"d/m/Y"|default:"غير محدد" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label"><i class="fas fa-map-pin text-success me-2"></i> الولاية:</td>
+                        <td class="info-value">{{ projet.wilaya.name_ar|default:"غير محدد" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label"><i class="fas fa-city text-success me-2"></i> الدائرة:</td>
+                        <td class="info-value">{{ projet.daira|default:"غير محددة" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label"><i class="fas fa-location-dot text-success me-2"></i> العنوان التفصيلي:</td>
+                        <td class="info-value">{{ projet.localisation|default:"غير محدد" }}</td>
+                    </tr>
+                    {% if projet.description %}
+                    <tr>
+                        <td class="info-label"><i class="fas fa-file-alt text-success me-2"></i> الوصف:</td>
+                        <td class="info-value">{{ projet.description|linebreaks }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- العمود الأيسر (الشريط الجانبي) -->
+        <div class="col-lg-4">
+            <!-- بطاقة المطور العقاري -->
+            <div class="info-card developer-card" data-aos="fade-up" data-aos-delay="150">
+                <div class="text-center">
+                    <div class="bg-white rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="fas fa-hard-hat fa-2x" style="color: var(--pf-primary);"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">{{ promoteur.nom_entreprise }}</h4>
+                    <p class="small opacity-75 mb-3">
+                        <i class="fas fa-id-card me-1"></i> رقم الانتساب: {{ promoteur.numero_affiliation }}
+                    </p>
+                    {% if promoteur.telephone %}
+                    <a href="tel:{{ promoteur.telephone }}" class="btn btn-outline-light w-100 rounded-pill mb-2">
+                        <i class="fas fa-phone-alt me-2"></i> اتصل بالمطور
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'properties:promoteur_detail' promoteur.id %}" class="btn btn-outline-light w-100 rounded-pill">
+                        <i class="fas fa-building me-2"></i> عرض ملف المطور
+                    </a>
+                </div>
+            </div>
+
+            <!-- معلومات سريعة -->
+            <div class="info-card" data-aos="fade-up" data-aos-delay="200">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-chart-line text-success me-2"></i> معلومات سريعة
+                </h5>
+                <div class="row g-3 text-center">
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <i class="fas fa-building fa-2x text-success mb-2"></i>
+                            <h3 class="mb-0">{{ type_counts|length|default:"0" }}</h3>
+                            <small class="text-muted">نوع من الوحدات</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <i class="fas fa-home fa-2x text-success mb-2"></i>
+                            <h3 class="mb-0">{{ total_logements|default:"0"|intcomma }}</h3>
+                            <small class="text-muted">وحدة سكنية</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if projet.date_garantie %}
+            <!-- تاريخ الضمان -->
+            <div class="info-card" data-aos="fade-up" data-aos-delay="250">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-shield-alt text-success me-2"></i> الضمان
+                </h5>
+                <div class="text-center">
+                    <div class="p-3 bg-light rounded-3">
+                        <i class="fas fa-calendar-check fa-2x text-success mb-2"></i>
+                        <p class="mb-0"><strong>تاريخ منح الضمان</strong></p>
+                        <h4 class="text-success mb-0">{{ projet.date_garantie|date:"d/m/Y" }}</h4>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({ duration: 600, once: true, offset: 50 });
+    });
+</script>
+{% endblock %}

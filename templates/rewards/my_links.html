@@ -1,0 +1,834 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}روابطي الترويجية | نظام الإحالات - عقارات الجزائر{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.css" rel="stylesheet">
+<style>
+    /* ========== متغيرات متطورة ========== */
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --primary-light: #FFF0E8;
+        --primary-glow: rgba(255,107,53,0.2);
+        --secondary: #1A2C3E;
+        --secondary-light: #2D4A6E;
+        --accent: #00C9A7;
+        --accent-dark: #00A88B;
+        --accent-glow: rgba(0,201,167,0.15);
+        --gray-bg: #F9FAFB;
+        --white: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-muted: #64748B;
+        --border-light: #E2E8F0;
+        --card-shadow: 0 20px 35px -12px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.02);
+        --hover-shadow: 0 25px 40px -12px rgba(0,0,0,0.15);
+        --border-radius-card: 32px;
+        --border-radius-stat: 28px;
+        --transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+
+    body {
+        background: linear-gradient(145deg, #F1F5F9 0%, #E2E8F0 100%);
+        font-family: 'Inter', 'Tajawal', sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* خلفية ديناميكية */
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: floatOrb 25s infinite alternate;
+    }
+
+    .orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--primary), transparent); top: -20%; right: -20%; }
+    .orb-2 { width: 40vw; height: 40vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -10%; left: -10%; animation-duration: 30s; }
+    .orb-3 { width: 30vw; height: 30vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 30%; left: 20%; animation-duration: 22s; opacity: 0.3; }
+
+    @keyframes floatOrb {
+        0% { transform: translate(0,0) scale(1); }
+        100% { transform: translate(3%,3%) scale(1.08); }
+    }
+
+    .grid-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    /* هيدر الصفحة المتطور */
+    .page-header {
+        background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        padding: 2.5rem 1rem;
+        border-radius: 0 0 60px 60px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        animation: rotate 20s infinite linear;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .page-header h1 {
+        font-weight: 800;
+        font-size: 2.2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-header p {
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-stat {
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(8px);
+        padding: 0.5rem 1.2rem;
+        border-radius: 60px;
+        font-size: 0.85rem;
+    }
+
+    /* بطاقات الإحصائيات المتقدمة */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: var(--border-radius-stat);
+        padding: 1.2rem;
+        transition: var(--transition);
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transform: scaleX(0);
+        transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-6px);
+        background: rgba(255,255,255,0.98);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        background: var(--primary-light);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon i {
+        font-size: 1.8rem;
+        color: var(--primary);
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--secondary);
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-top: 0.25rem;
+    }
+
+    .stat-change {
+        font-size: 0.7rem;
+        margin-top: 0.5rem;
+        display: inline-block;
+    }
+
+    .stat-change.positive {
+        color: #10B981;
+    }
+
+    .stat-change.negative {
+        color: #EF4444;
+    }
+
+    /* بطاقات الروابط */
+    .links-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: var(--border-radius-card);
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .links-card:hover {
+        box-shadow: var(--hover-shadow);
+    }
+
+    .links-header {
+        background: var(--primary-light);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .links-header h5 {
+        margin: 0;
+        font-weight: 700;
+        color: var(--secondary);
+    }
+
+    .links-header .search-box {
+        position: relative;
+        width: 250px;
+    }
+
+    .links-header .search-box i {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+
+    .links-header .search-box input {
+        padding-right: 35px;
+        border-radius: 60px;
+        border: 1px solid var(--border-light);
+        font-size: 0.8rem;
+        height: 35px;
+    }
+
+    .link-item {
+        border-bottom: 1px solid var(--border-light);
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .link-item:hover {
+        background: var(--primary-light);
+    }
+
+    .link-item.active {
+        background: var(--primary-light);
+        border-right: 3px solid var(--primary);
+    }
+
+    .link-title {
+        font-weight: 700;
+        color: var(--secondary);
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .link-url {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        word-break: break-all;
+        direction: ltr;
+        text-align: left;
+        font-family: monospace;
+    }
+
+    .copy-btn {
+        background: var(--primary-light);
+        border: none;
+        border-radius: 60px;
+        padding: 0.3rem 1rem;
+        font-size: 0.7rem;
+        transition: var(--transition);
+    }
+
+    .copy-btn:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .badge-clicks {
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 60px;
+        font-size: 0.7rem;
+    }
+
+    .badge-valid {
+        background: #D1FAE5;
+        color: #059669;
+    }
+
+    /* العمود الأيمن */
+    .sticky-sidebar {
+        position: sticky;
+        top: 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .create-card, .info-card, .points-card {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: var(--border-radius-card);
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .create-card:hover, .info-card:hover, .points-card:hover {
+        box-shadow: var(--hover-shadow);
+    }
+
+    .create-header {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        padding: 1rem;
+        color: white;
+    }
+
+    .points-header {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        padding: 1rem;
+        color: white;
+    }
+
+    .create-header h5, .info-header h5, .points-header h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .points-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border: none;
+        border-radius: 60px;
+        padding: 0.6rem 1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: var(--transition);
+        color: white;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px var(--primary-glow);
+    }
+
+    .btn-outline-primary-custom {
+        border: 1px solid var(--primary);
+        border-radius: 60px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: var(--transition);
+        background: transparent;
+        color: var(--primary);
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-outline-primary-custom:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .info-header {
+        background: #F8FAFC;
+        padding: 1rem;
+        color: var(--secondary);
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-list li {
+        padding: 0.7rem 0;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .info-list li:last-child {
+        border-bottom: none;
+    }
+
+    .info-list i {
+        color: var(--primary);
+        width: 24px;
+        font-size: 1rem;
+    }
+
+    /* الرسم البياني */
+    .chart-container {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(8px);
+        border-radius: var(--border-radius-card);
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    /* إشعارات */
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1050;
+        min-width: 280px;
+        animation: slideInRight 0.3s ease;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    /* تحسينات التجاوب */
+    @media (max-width: 768px) {
+        .page-header h1 { font-size: 1.5rem; }
+        .stat-value { font-size: 1.3rem; }
+        .sticky-sidebar { position: relative; top: 0; }
+        .link-item .d-flex { flex-direction: column; align-items: stretch; }
+        .badge-clicks { align-self: flex-start; }
+        .stats-grid { grid-template-columns: 1fr; }
+        .links-header .search-box { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animated-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+</div>
+
+<div class="page-header" data-aos="fade-down">
+    <div class="container">
+        <h1><i class="bi bi-link-45deg"></i> روابطي الترويجية</h1>
+        <p>أنشئ روابط ترويجية لعقاراتك واكسب النقاط</p>
+        <div class="header-stats">
+            <div class="header-stat"><i class="bi bi-building"></i> {{ available_properties|length }} عقار متاح</div>
+            <div class="header-stat"><i class="bi bi-graph-up"></i> +{{ valid_clicks|default:0 }} نقرة صالحة</div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <!-- إحصائيات متقدمة -->
+    <div class="stats-grid" data-aos="fade-up" data-aos-delay="0">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-link-45deg"></i></div>
+            <div>
+                <div class="stat-value">{{ links|length }}</div>
+                <div class="stat-label">روابط ترويجية</div>
+                {% if links %}
+                <div class="stat-change positive"><i class="bi bi-arrow-up"></i> نشطة</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-eye"></i></div>
+            <div>
+                <div class="stat-value">{{ total_clicks|default:0|intcomma }}</div>
+                <div class="stat-label">إجمالي النقرات</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="stat-value">{{ valid_clicks|default:0|intcomma }}</div>
+                <div class="stat-label">نقرات صالحة</div>
+                {% if valid_clicks and total_clicks %}
+                <div class="stat-change positive"><i class="bi bi-graph-up"></i> {% widthratio valid_clicks total_clicks 100 %}% صالحة</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
+            <div>
+                <div class="stat-value">{{ promoter.points|default:0|intcomma }}</div>
+                <div class="stat-label">نقاط الإحالة</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- قائمة الروابط -->
+        <div class="col-lg-8">
+            <div class="links-card" data-aos="fade-up" data-aos-delay="150">
+                <div class="links-header">
+                    <h5><i class="bi bi-list-ul"></i> روابطي الترويجية</h5>
+                    <div class="search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="searchLinks" class="form-control" placeholder="بحث في الروابط...">
+                    </div>
+                </div>
+                <div class="p-0" id="linksList">
+                    {% if links %}
+                        {% for link in links %}
+                        <div class="link-item p-3" data-title="{{ link.property.title|lower }}">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                <div class="flex-grow-1">
+                                    <div class="link-title">
+                                        <i class="bi bi-house-door"></i> {{ link.property.title }}
+                                        {% if link.is_featured %}
+                                        <span class="badge bg-warning text-dark ms-2">مميز</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="link-url mt-1">
+                                        <code id="link-{{ link.id }}">{{ request.scheme }}://{{ request.get_host }}{% url 'rewards:track_click' link.unique_code %}</code>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted"><i class="bi bi-calendar"></i> تم الإنشاء: {{ link.created_at|date:"Y-m-d" }}</small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="mb-2">
+                                        <span class="badge-clicks"><i class="bi bi-mouse"></i> {{ link.clicks_count }} نقرة</span>
+                                        <span class="badge-clicks badge-valid ms-1"><i class="bi bi-check-circle"></i> {{ link.valid_clicks_count|default:0 }} صالحة</span>
+                                    </div>
+                                    <button class="copy-btn w-100" data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'rewards:track_click' link.unique_code %}">
+                                        <i class="bi bi-files"></i> نسخ الرابط
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-link-slash fs-1 text-muted"></i>
+                            <p class="mt-2">لا توجد روابط ترويجية بعد</p>
+                            <button class="btn btn-primary-custom mt-2" data-bs-toggle="modal" data-bs-target="#createLinkModal">
+                                <i class="bi bi-plus-circle"></i> إنشاء رابط جديد
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- رسم بياني للنقرات -->
+            {% if clicks_data %}
+            <div class="chart-container mt-4" data-aos="fade-up" data-aos-delay="200">
+                <h6 class="mb-3"><i class="bi bi-graph-up"></i> النقرات خلال آخر 7 أيام</h6>
+                <canvas id="clicksChart" height="200"></canvas>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- العمود الأيمن -->
+        <div class="col-lg-4">
+            <div class="sticky-sidebar">
+                <!-- بطاقة النقاط -->
+                <div class="points-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="points-header">
+                        <h5><i class="bi bi-star-fill"></i> نقاطي</h5>
+                    </div>
+                    <div class="p-3 text-center">
+                        <div class="points-value">{{ promoter.points|default:0|intcomma }}</div>
+                        <p class="text-muted small">نقطة متاحة</p>
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar bg-primary" style="width: {{ points_percentage|default:0 }}%"></div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'rewards:redeem_points' %}" class="btn-outline-primary-custom">
+                                <i class="bi bi-gift"></i> استبدال النقاط
+                            </a>
+                            <a href="{% url 'rewards:leaderboard' %}" class="btn-outline-primary-custom">
+                                <i class="bi bi-trophy"></i> لوحة المتصدرين
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- بطاقة إنشاء رابط جديد -->
+                <div class="create-card" data-aos="fade-up" data-aos-delay="250">
+                    <div class="create-header">
+                        <h5><i class="bi bi-plus-circle"></i> رابط جديد</h5>
+                    </div>
+                    <div class="p-3">
+                        {% if available_properties %}
+                            <form id="createLinkForm" method="get">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">اختر عقاراً</label>
+                                    <select name="property_id" class="form-select" required>
+                                        <option value="">-- اختر عقاراً --</option>
+                                        {% for prop in available_properties %}
+                                        <option value="{{ prop.id }}">{{ prop.title }} ({{ prop.price|floatformat:0|intcomma }} دج)</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn-create" id="createLinkBtn">
+                                    <i class="bi bi-link-45deg"></i> إنشاء رابط ترويجي
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                                <p class="mt-2">لا توجد عقارات متاحة للترويج حالياً</p>
+                                <small class="text-muted">تأكد من وجود عقارات مع تفعيل نظام CPC.</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- بطاقة معلومات -->
+                <div class="info-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="info-header">
+                        <h5><i class="bi bi-info-circle"></i> كيف تعمل الإحالات؟</h5>
+                    </div>
+                    <div class="p-3">
+                        <ul class="info-list">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> أنشئ رابطاً ترويجياً لعقار</li>
+                            <li><i class="bi bi-share"></i> شارك الرابط مع عملائك</li>
+                            <li><i class="bi bi-clock"></i> كل نقرة صالحة (مدة تصفح ≥ 30 ثانية) تمنحك نقاطاً</li>
+                            <li><i class="bi bi-coin"></i> 1 نقطة = 1 دج (يمكن استبدالها)</li>
+                            <li><i class="bi bi-trophy"></i> كل 100 نقرة صالحة تمنحك 1000 نقطة إضافية</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- إشعارات -->
+<div id="toastContainer" class="toast-notification"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({ duration: 700, once: true, offset: 50 });
+
+        // ========== البحث في الروابط ==========
+        const searchInput = document.getElementById('searchLinks');
+        const linksList = document.getElementById('linksList');
+        const linkItems = document.querySelectorAll('.link-item');
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                linkItems.forEach(item => {
+                    const title = item.getAttribute('data-title') || '';
+                    if (title.includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // ========== نسخ الرابط ==========
+        const copyBtns = document.querySelectorAll('.copy-btn');
+        copyBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const url = this.dataset.url;
+                navigator.clipboard.writeText(url).then(() => {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check-lg"></i> تم النسخ';
+                    showNotification('تم نسخ الرابط بنجاح!', 'success');
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                    }, 2000);
+                }).catch(() => {
+                    showNotification('حدث خطأ في نسخ الرابط', 'error');
+                });
+            });
+        });
+
+        // ========== إنشاء رابط ترويجي ==========
+        const form = document.getElementById('createLinkForm');
+        const createBtn = document.getElementById('createLinkBtn');
+
+        if (form && createBtn) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const select = this.querySelector('select[name="property_id"]');
+                const propertyId = select.value;
+
+                if (!propertyId) {
+                    showNotification('الرجاء اختيار عقار', 'error');
+                    return;
+                }
+
+                const originalText = createBtn.innerHTML;
+                createBtn.innerHTML = '<span class="loading-spinner"></span> جاري الإنشاء...';
+                createBtn.disabled = true;
+
+                const url = `{% url 'rewards:create_affiliate_link' 0 %}`.replace('/0/', `/${propertyId}/`);
+                window.location.href = url;
+            });
+        }
+
+        // ========== الرسم البياني ==========
+        const chartCanvas = document.getElementById('clicksChart');
+        if (chartCanvas && typeof clicksData !== 'undefined') {
+            new Chart(chartCanvas, {
+                type: 'line',
+                data: {
+                    labels: daysLabels || ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+                    datasets: [{
+                        label: 'عدد النقرات',
+                        data: clicksData || [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#FF6B35',
+                        backgroundColor: 'rgba(255,107,53,0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#FF6B35',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== إظهار الإشعارات ==========
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+            toast.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ========== الوضع الليلي ==========
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}رابط الترويج{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-success">
+        <h4>تم إنشاء رابط الترويج بنجاح</h4>
+        <p>للعقار: <strong>{{ property.title }}</strong></p>
+        <p>الرابط: <a href="{{ link }}" target="_blank">{{ link }}</a></p>
+        <p>يمكنك مشاركة هذا الرابط لتحصل على عمولة عند كل نقرة شرعية.</p>
+    </div>
+    <a href="{% url 'properties:property_detail' property.id %}" class="btn btn-primary">العودة للعقار</a>
+</div>
+{% endblock %}

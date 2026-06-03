@@ -1,0 +1,996 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if property %}تعديل عقار{% else %}إضافة عقار جديد{% endif %} | عقارات الجزائر{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+<style>
+    /* ========== متغيرات متطورة ========== */
+    :root {
+        --primary: #FF6B35;
+        --primary-dark: #E55A2B;
+        --primary-light: #FFF0E8;
+        --primary-glow: rgba(255,107,53,0.2);
+        --secondary: #1A2C3E;
+        --secondary-light: #2D4A6E;
+        --accent: #00C9A7;
+        --accent-glow: rgba(0,201,167,0.15);
+        --gray-bg: #F9FAFB;
+        --white: #FFFFFF;
+        --text-dark: #1E293B;
+        --text-muted: #64748B;
+        --border-light: #E2E8F0;
+        --card-shadow: 0 20px 35px -12px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.02);
+        --hover-shadow: 0 25px 40px -12px rgba(0,0,0,0.15);
+        --border-radius-card: 32px;
+        --border-radius-input: 20px;
+        --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        --transition-slow: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    body {
+        background: linear-gradient(145deg, #F1F5F9 0%, #E2E8F0 100%);
+        font-family: 'Inter', 'Tajawal', sans-serif;
+        overflow-x: hidden;
+    }
+    /* خلفية ديناميكية */
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.4;
+        animation: floatOrb 25s infinite alternate;
+    }
+    .orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--primary), transparent); top: -20%; right: -20%; }
+    .orb-2 { width: 40vw; height: 40vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -10%; left: -10%; animation-duration: 30s; }
+    .orb-3 { width: 30vw; height: 30vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 30%; left: 20%; animation-duration: 22s; opacity: 0.3; }
+    @keyframes floatOrb {
+        0% { transform: translate(0,0) scale(1); }
+        100% { transform: translate(3%, 3%) scale(1.08); }
+    }
+    .grid-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+    /* هيدر الصفحة */
+    .page-header {
+        background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        padding: 2rem 1rem;
+        border-radius: 0 0 48px 48px;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+    }
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+        animation: shimmer 20s infinite linear;
+    }
+    @keyframes shimmer {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .page-header h1 {
+        font-weight: 800;
+        font-size: 2rem;
+        position: relative;
+        z-index: 1;
+        animation: fadeInDown 0.6s ease-out;
+    }
+    .page-header p {
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    /* البطاقة الرئيسية */
+    .card-create {
+        border: none;
+        border-radius: var(--border-radius-card);
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: blur(2px);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        overflow: hidden;
+        animation: fadeInUp 0.7s ease-out;
+    }
+    .card-create:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--hover-shadow);
+    }
+    /* نظام علامات التبويب */
+    .tabs-container {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .nav-tabs-custom {
+        border-bottom: none;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .nav-tabs-custom .nav-link {
+        border: none;
+        border-radius: 60px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        transition: var(--transition);
+        background: transparent;
+    }
+    .nav-tabs-custom .nav-link i {
+        margin-left: 6px;
+    }
+    .nav-tabs-custom .nav-link:hover {
+        color: var(--primary);
+        background: var(--primary-light);
+    }
+    .nav-tabs-custom .nav-link.active {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    /* أقسام النموذج */
+    .section-card {
+        background: var(--white);
+        border-radius: 24px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.04);
+        transition: var(--transition);
+    }
+    .section-card:hover {
+        border-color: var(--primary-light);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    .section-header {
+        background: #FAFCFE;
+        padding: 0.9rem 1.2rem;
+        border-bottom: 1px solid #EFF3F8;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: var(--secondary);
+        font-size: 1rem;
+    }
+    .section-header i {
+        color: var(--primary);
+        font-size: 1.25rem;
+    }
+    /* تنسيق الحقول */
+    .form-label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .form-control, .form-select, textarea {
+        text-align: right !important;
+        direction: rtl !important;
+        border-radius: var(--border-radius-input);
+        border: 1px solid var(--border-light);
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+        transition: var(--transition);
+        background: var(--white);
+    }
+    .form-control:focus, .form-select:focus, textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-glow);
+        outline: none;
+    }
+    /* خريطة متطورة */
+    .map-container {
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        position: relative;
+    }
+    #location-map {
+        height: 300px;
+        width: 100%;
+        background: #e9ecef;
+    }
+    .map-controls {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 1000;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(4px);
+        border-radius: 40px;
+        padding: 0.3rem;
+        display: flex;
+        gap: 0.3rem;
+        box-shadow: var(--card-shadow);
+    }
+    .map-controls button {
+        background: white;
+        border: none;
+        border-radius: 40px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    .map-controls button:hover {
+        background: var(--primary);
+        color: white;
+    }
+    /* أزرار الراديو */
+    .ad-type-option {
+        background: #F8FAFE;
+        border-radius: 60px;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    .ad-type-option:hover {
+        background: var(--primary-light);
+    }
+    /* معاينة الصور */
+    .image-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .preview-image {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: var(--transition);
+        background: #F8FAFE;
+        position: relative;
+        cursor: pointer;
+        aspect-ratio: 1 / 1;
+    }
+    .preview-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .preview-image .remove-img {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        transition: 0.2s;
+        z-index: 2;
+    }
+    .preview-image .remove-img:hover {
+        background: #E53E3E;
+        transform: scale(1.1);
+    }
+    .preview-image .image-order {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        border-radius: 20px;
+        padding: 2px 8px;
+        font-size: 0.7rem;
+    }
+    /* زر الحفظ الملون */
+    .btn-save-colorful {
+        background: linear-gradient(135deg, var(--primary), #FF8C5A, var(--accent));
+        background-size: 200% auto;
+        border: none;
+        border-radius: 60px;
+        padding: 0.7rem 1.5rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        color: white;
+        box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+        animation: gradientShift 3s ease infinite;
+    }
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .btn-save-colorful:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(255,107,53,0.5);
+        filter: brightness(1.05);
+    }
+    /* مؤشر التحميل */
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.6s linear infinite;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    /* الوضع الليلي */
+    body.dark-mode .card-create,
+    body.dark-mode .section-card {
+        background: #1E293B;
+    }
+    body.dark-mode .section-header {
+        background: #334155;
+        color: #F1F5F9;
+        border-bottom-color: #475569;
+    }
+    body.dark-mode .form-label {
+        color: #F1F5F9;
+    }
+    body.dark-mode .form-control,
+    body.dark-mode .form-select,
+    body.dark-mode textarea {
+        background: #0F172A;
+        border-color: #334155;
+        color: #F1F5F9;
+    }
+    body.dark-mode .ad-type-option {
+        background: #334155;
+    }
+    body.dark-mode .map-container {
+        border: 1px solid #475569;
+    }
+    body.dark-mode .map-controls button {
+        background: #334155;
+        color: #F1F5F9;
+    }
+    @media (max-width: 768px) {
+        .page-header h1 { font-size: 1.5rem; }
+        .card-create { margin: 0 0.5rem; }
+        .btn-save-colorful, .btn-outline-custom { padding: 0.5rem 1rem; font-size: 0.85rem; }
+        #location-map { height: 220px; }
+        .nav-tabs-custom .nav-link { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animated-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+</div>
+
+<div class="page-header" data-aos="fade-down">
+    <div class="container">
+        <h1><i class="bi bi-plus-circle me-2"></i> {% if property %}تعديل عقار{% else %}إضافة عقار جديد{% endif %}</h1>
+        <p>{% if property %}تحديث بيانات عقارك{% else %}أضف عقارك الجديد بكل سهولة{% endif %}</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <div class="card card-create" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-body p-4 p-lg-5">
+                    <form method="post" enctype="multipart/form-data" id="property-form">
+                        {% csrf_token %}
+
+                        <!-- أخطاء عامة -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger mb-4">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- نظام علامات التبويب -->
+                        <div class="tabs-container">
+                            <ul class="nav nav-tabs-custom" id="propertyTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
+                                        <i class="bi bi-info-circle"></i> أساسيات
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                                        <i class="bi bi-grid-3x3-gap-fill"></i> تفاصيل
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="location-tab" data-bs-toggle="tab" data-bs-target="#location" type="button" role="tab">
+                                        <i class="bi bi-geo-alt-fill"></i> الموقع
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab">
+                                        <i class="bi bi-images"></i> الصور
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="promo-tab" data-bs-toggle="tab" data-bs-target="#promo" type="button" role="tab">
+                                        <i class="bi bi-megaphone"></i> ترويج
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-content">
+                            <!-- تبويب المعلومات الأساسية -->
+                            <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                                <div class="section-card" data-aos="fade-up" data-aos-delay="150">
+                                    <div class="section-header">
+                                        <i class="bi bi-info-circle-fill"></i>
+                                        <span>المعلومات الأساسية</span>
+                                    </div>
+                                    <div class="p-3 p-md-4">
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label">العنوان *</label>
+                                                {{ form.title }}
+                                                {% if form.title.errors %}
+                                                    <div class="invalid-feedback">{{ form.title.errors|join:", " }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">السعر (دج) *</label>
+                                                {{ form.price }}
+                                                {% if form.price.errors %}
+                                                    <div class="invalid-feedback">{{ form.price.errors|join:", " }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">المساحة (م²) *</label>
+                                                {{ form.area_sqm }}
+                                                {% if form.area_sqm.errors %}
+                                                    <div class="invalid-feedback">{{ form.area_sqm.errors|join:", " }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">الوصف</label>
+                                                {{ form.description }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- تبويب تفاصيل العقار -->
+                            <div class="tab-pane fade" id="details" role="tabpanel">
+                                <div class="section-card" data-aos="fade-up" data-aos-delay="200">
+                                    <div class="section-header">
+                                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                                        <span>تفاصيل العقار</span>
+                                    </div>
+                                    <div class="p-3 p-md-4">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label">غرف النوم</label>
+                                                {{ form.bedrooms }}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">الحمامات</label>
+                                                {{ form.bathrooms }}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">نوع العقار *</label>
+                                                {{ form.property_type }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">نوع العملية *</label>
+                                                {{ form.listing_type }}
+                                            </div>
+                                            {% if form.category %}
+                                            <div class="col-md-6">
+                                                <label class="form-label">الفئة</label>
+                                                {{ form.category }}
+                                            </div>
+                                            {% endif %}
+                                            <div class="col-md-6">
+                                                <label class="form-label">تاريخ المعاملة</label>
+                                                {{ form.transaction_date }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- تبويب الموقع -->
+                            <div class="tab-pane fade" id="location" role="tabpanel">
+                                <div class="section-card" data-aos="fade-up" data-aos-delay="250">
+                                    <div class="section-header">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <span>الموقع</span>
+                                    </div>
+                                    <div class="p-3 p-md-4">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">الولاية</label>
+                                                {{ form.wilaya }}
+                                                {% if form.wilaya.errors %}
+                                                    <div class="invalid-feedback">{{ form.wilaya.errors|join:", " }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">البلدية</label>
+                                                {{ form.commune }}
+                                                {% if form.commune.errors %}
+                                                    <div class="invalid-feedback">{{ form.commune.errors|join:", " }}</div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">العنوان التفصيلي</label>
+                                                {{ form.address }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">خط العرض (Latitude)</label>
+                                                {{ form.latitude }}
+                                                <div class="form-text small">يمكنك النقر على الخريطة لتحديد الإحداثيات</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">خط الطول (Longitude)</label>
+                                                {{ form.longitude }}
+                                            </div>
+                                        </div>
+                                        <!-- خريطة تفاعلية متطورة -->
+                                        <div class="map-container">
+                                            <div id="location-map"></div>
+                                            <div class="map-controls">
+                                                <button type="button" id="search-address-btn" title="البحث بالعنوان"><i class="bi bi-search"></i></button>
+                                                <button type="button" id="fullscreen-map-btn" title="ملء الشاشة"><i class="bi bi-arrows-fullscreen"></i></button>
+                                                <button type="button" id="locate-me-btn" title="موقعي الحالي"><i class="bi bi-crosshair"></i></button>
+                                                <button type="button" id="reset-map-btn" title="إعادة تعيين"><i class="bi bi-arrow-repeat"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="alert alert-modern mt-3">
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                            يمكنك النقر على الخريطة لتعيين الإحداثيات، أو استخدام زر "البحث بالعنوان" لإدخال عنوان.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- تبويب الصور -->
+                            <div class="tab-pane fade" id="images" role="tabpanel">
+                                <div class="section-card" data-aos="fade-up" data-aos-delay="300">
+                                    <div class="section-header">
+                                        <i class="bi bi-images"></i>
+                                        <span>الصور</span>
+                                    </div>
+                                    <div class="p-3 p-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">الصورة الرئيسية</label>
+                                            {{ form.image }}
+                                            {% if property and property.image %}
+                                                <div class="mt-2 d-flex align-items-center gap-3">
+                                                    <img src="{{ property.image.url }}" style="height: 80px; width: auto;" class="rounded border">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" name="image-clear" id="image-clear_id" class="form-check-input">
+                                                        <label for="image-clear_id" class="form-check-label">حذف الصورة الحالية</label>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            {% if form.image.errors %}
+                                                <div class="invalid-feedback d-block">{{ form.image.errors|join:", " }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <label class="form-label">صور إضافية (يمكن اختيار عدة صور)</label>
+                                            <input type="file" name="images" multiple class="form-control" accept="image/*" id="additional-images">
+                                            <div id="image-preview" class="image-preview-grid mt-3"></div>
+                                            <small class="text-muted">يمكنك اختيار عدة صور، الأولى ستكون الرئيسية إذا لم ترفع صورة رئيسية. اضغط على الصورة لإزالتها.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- تبويب الترويج (معدل بخيارين) -->
+                            <div class="tab-pane fade" id="promo" role="tabpanel">
+                                <div class="section-card" data-aos="fade-up" data-aos-delay="350">
+                                    <div class="section-header">
+                                        <i class="bi bi-megaphone-fill"></i>
+                                        <span>خيارات الترويج والإعلان</span>
+                                    </div>
+                                    <div class="p-3 p-md-4">
+                                        <!-- خياران: إعلان مجاني أو مدفوع -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-bold">نوع الإعلان</label>
+                                            <div class="d-flex flex-wrap gap-3">
+                                                <div class="ad-type-option d-flex align-items-center gap-2">
+                                                    <input class="form-check-input" type="radio" name="ad_type" id="ad_free" value="free" {% if not form.is_cpc_active.value %}checked{% endif %}>
+                                                    <label class="form-check-label" for="ad_free">
+                                                        <i class="bi bi-gift text-success"></i> إعلان مجاني
+                                                    </label>
+                                                </div>
+                                                <div class="ad-type-option d-flex align-items-center gap-2">
+                                                    <input class="form-check-input" type="radio" name="ad_type" id="ad_paid" value="paid" {% if form.is_cpc_active.value %}checked{% endif %}>
+                                                    <label class="form-check-label" for="ad_paid">
+                                                        <i class="bi bi-coin text-primary"></i> إعلان مدفوع (CPC)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- حقل سعر النقرة (يظهر فقط عند اختيار مدفوع) -->
+                                        <div id="cpc-field-container" style="{% if not form.is_cpc_active.value %}display: none;{% endif %}">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">سعر النقرة (دج)</label>
+                                                    {{ form.cpc }}
+                                                    <div class="form-text small">تكلفة كل نقرة على إعلانك (CPC) - الحد الأدنى 0.20 دج</div>
+                                                    {% if form.cpc.errors %}
+                                                        <div class="invalid-feedback d-block">{{ form.cpc.errors|join:", " }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="alert alert-info mt-2">
+                                                        <i class="bi bi-info-circle"></i> يتم خصم المبلغ عند كل نقرة على رابط عقارك. يمكنك إيقاف الحملة في أي وقت.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- حقول الحالة الأساسية (نشط / مميز) -->
+                                        <hr class="my-3">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="form-check form-switch">
+                                                    {{ form.is_active }}
+                                                    <label class="form-check-label">نشط (معروض للجمهور)</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check form-switch">
+                                                    {{ form.is_featured }}
+                                                    <label class="form-check-label">
+                                                        <i class="bi bi-star-fill text-warning"></i> مميز (يظهر في أعلى الصفحة)
+                                                    </label>
+                                                    <small class="text-muted d-block">ينصح بتفعيل هذا الخيار للإعلانات المدفوعة لتحقيق أقصى ظهور</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- أزرار الإجراء (زر الحفظ ملون) -->
+                        <div class="d-flex flex-wrap justify-content-between gap-3 mt-4" data-aos="fade-up" data-aos-delay="450">
+                            <button type="submit" class="btn-save-colorful" id="submitBtn">
+                                <i class="bi bi-check-lg me-2"></i> {% if property %}تحديث العقار{% else %}حفظ العقار{% endif %}
+                            </button>
+                            <a href="{% url 'properties:property_list' %}" class="btn btn-outline-custom">
+                                <i class="bi bi-x-lg me-2"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تفعيل مكتبة AOS
+        AOS.init({
+            duration: 600,
+            once: true,
+            offset: 20,
+            easing: 'ease-in-out'
+        });
+
+        // ========== 1. خريطة تفاعلية متطورة ==========
+        const latInput = document.getElementById('id_latitude');
+        const lngInput = document.getElementById('id_longitude');
+        let map, marker;
+
+        function initMap() {
+            const defaultLat = latInput && latInput.value ? parseFloat(latInput.value) : 36.7538;
+            const defaultLng = lngInput && lngInput.value ? parseFloat(lngInput.value) : 3.0588;
+
+            map = L.map('location-map').setView([defaultLat, defaultLng], 13);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            }).addTo(map);
+
+            L.control.locate({
+                position: 'topleft',
+                strings: { title: 'موقعي الحالي' }
+            }).addTo(map);
+
+            marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+            function updateCoordinates(lat, lng) {
+                if (latInput) latInput.value = lat.toFixed(6);
+                if (lngInput) lngInput.value = lng.toFixed(6);
+            }
+
+            marker.on('dragend', function(e) {
+                const pos = marker.getLatLng();
+                updateCoordinates(pos.lat, pos.lng);
+            });
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                updateCoordinates(e.latlng.lat, e.latlng.lng);
+            });
+
+            if (latInput && lngInput && latInput.value && lngInput.value) {
+                updateCoordinates(defaultLat, defaultLng);
+            }
+
+            document.getElementById('fullscreen-map-btn')?.addEventListener('click', () => {
+                const container = document.querySelector('.map-container');
+                if (container.requestFullscreen) container.requestFullscreen();
+                else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+                setTimeout(() => map.invalidateSize(), 100);
+            });
+
+            document.getElementById('reset-map-btn')?.addEventListener('click', () => {
+                map.setView([36.7538, 3.0588], 7);
+                marker.setLatLng([36.7538, 3.0588]);
+                updateCoordinates(36.7538, 3.0588);
+            });
+
+            document.getElementById('locate-me-btn')?.addEventListener('click', () => {
+                map.locate({ setView: true, maxZoom: 15 });
+                map.on('locationfound', function(e) {
+                    marker.setLatLng(e.latlng);
+                    updateCoordinates(e.latlng.lat, e.latlng.lng);
+                });
+                map.on('locationerror', function() {
+                    alert('تعذر تحديد موقعك. تأكد من السماح بالوصول إلى الموقع.');
+                });
+            });
+
+            document.getElementById('search-address-btn')?.addEventListener('click', () => {
+                const address = prompt('أدخل عنواناً للبحث (مثال: الجزائر العاصمة)');
+                if (address) {
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && data[0]) {
+                                const lat = parseFloat(data[0].lat);
+                                const lng = parseFloat(data[0].lon);
+                                map.setView([lat, lng], 15);
+                                marker.setLatLng([lat, lng]);
+                                updateCoordinates(lat, lng);
+                            } else {
+                                alert('لم يتم العثور على العنوان.');
+                            }
+                        })
+                        .catch(() => alert('خطأ في الاتصال بخدمة البحث.'));
+                }
+            });
+        }
+
+        if (document.getElementById('location-map')) {
+            initMap();
+        }
+
+        // ========== 2. ربط البلديات بالولاية (AJAX) ==========
+        const wilayaSelect = document.getElementById('id_wilaya');
+        const communeSelect = document.getElementById('id_commune');
+
+        function loadCommunes() {
+            const wilayaId = wilayaSelect.value;
+            if (!wilayaId) {
+                communeSelect.innerHTML = '<option value="">---------</option>';
+                communeSelect.disabled = true;
+                return;
+            }
+            communeSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+            communeSelect.disabled = true;
+
+            fetch(`/properties/get-communes/?wilaya_id=${wilayaId}`)
+                .then(response => response.json())
+                .then(data => {
+                    communeSelect.innerHTML = '<option value="">---------</option>';
+                    data.forEach(commune => {
+                        const option = document.createElement('option');
+                        option.value = commune.id;
+                        option.textContent = `${commune.name_ar} (${commune.name_fr || commune.name_ar})`;
+                        communeSelect.appendChild(option);
+                    });
+                    communeSelect.disabled = false;
+                    const preselectedCommune = '{{ form.commune.value|default:"" }}';
+                    if (preselectedCommune) {
+                        communeSelect.value = preselectedCommune;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading communes:', error);
+                    communeSelect.innerHTML = '<option value="">خطأ في التحميل</option>';
+                    communeSelect.disabled = false;
+                });
+        }
+
+        if (wilayaSelect && communeSelect) {
+            wilayaSelect.addEventListener('change', loadCommunes);
+            if (wilayaSelect.value) {
+                loadCommunes();
+            }
+        }
+
+        // ========== 3. معاينة الصور الإضافية ==========
+        const imagesInput = document.getElementById('additional-images');
+        const previewContainer = document.getElementById('image-preview');
+        let currentImageFiles = [];
+
+        function updatePreview() {
+            if (!previewContainer) return;
+            previewContainer.innerHTML = '';
+            currentImageFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-image';
+                    div.setAttribute('data-index', index);
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="صورة ${index+1}">
+                        <div class="remove-img" data-index="${index}"><i class="bi bi-x"></i></div>
+                        <div class="image-order">${index+1}</div>
+                    `;
+                    previewContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.querySelectorAll('.remove-img').forEach(btn => {
+                btn.removeEventListener('click', handleRemoveImage);
+                btn.addEventListener('click', handleRemoveImage);
+            });
+        }
+
+        function handleRemoveImage(e) {
+            e.stopPropagation();
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            if (!isNaN(index)) {
+                currentImageFiles.splice(index, 1);
+                const dt = new DataTransfer();
+                currentImageFiles.forEach(f => dt.items.add(f));
+                if (imagesInput) imagesInput.files = dt.files;
+                updatePreview();
+            }
+        }
+
+        if (imagesInput) {
+            imagesInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                currentImageFiles = [...currentImageFiles, ...files];
+                updatePreview();
+            });
+        }
+
+        // ========== 4. التحكم في خيارات الإعلان (مجاني/مدفوع) ==========
+        const adFreeRadio = document.getElementById('ad_free');
+        const adPaidRadio = document.getElementById('ad_paid');
+        const cpcContainer = document.getElementById('cpc-field-container');
+        const isCpcActiveField = document.getElementById('id_is_cpc_active');
+        const cpcField = document.getElementById('id_cpc');
+
+        function updateAdType() {
+            if (adPaidRadio.checked) {
+                cpcContainer.style.display = 'block';
+                if (isCpcActiveField) isCpcActiveField.checked = true;
+                if (cpcField && (!cpcField.value || cpcField.value == '0')) {
+                    cpcField.value = '0.20';
+                }
+            } else {
+                cpcContainer.style.display = 'none';
+                if (isCpcActiveField) isCpcActiveField.checked = false;
+                if (cpcField) cpcField.value = '0';
+            }
+        }
+
+        if (adFreeRadio && adPaidRadio) {
+            adFreeRadio.addEventListener('change', updateAdType);
+            adPaidRadio.addEventListener('change', updateAdType);
+            updateAdType();
+        }
+
+        // ========== 5. تحقق قبل الإرسال وعرض مؤشر تحميل ==========
+        const form = document.getElementById('property-form');
+        const titleField = document.getElementById('id_title');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (form && titleField && submitBtn) {
+            form.addEventListener('submit', function(e) {
+                if (!titleField.value.trim()) {
+                    e.preventDefault();
+                    titleField.classList.add('is-invalid');
+                    alert('يرجى إدخال عنوان العقار');
+                } else {
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<span class="loading-spinner"></span> جاري الحفظ...';
+                    submitBtn.disabled = true;
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }, 5000);
+                }
+            });
+        }
+
+        // ========== 6. إزالة رسائل الخطأ عند الكتابة ==========
+        const formInputs = document.querySelectorAll('.form-control, .form-select');
+        formInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+                const feedback = this.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                    feedback.style.display = 'none';
+                }
+            });
+        });
+
+        // ========== 7. تفعيل نظام التبويب مع AOS ==========
+        const tabButtons = document.querySelectorAll('#propertyTabs button');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('shown.bs.tab', function(e) {
+                const targetId = e.target.getAttribute('data-bs-target');
+                const targetPane = document.querySelector(targetId);
+                if (targetPane) {
+                    const cards = targetPane.querySelectorAll('.section-card');
+                    cards.forEach((card, idx) => {
+                        card.setAttribute('data-aos', 'fade-up');
+                        card.setAttribute('data-aos-delay', (idx * 50).toString());
+                        AOS.refresh();
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

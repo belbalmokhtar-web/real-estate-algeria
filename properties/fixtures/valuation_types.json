@@ -1,0 +1,14 @@
+[
+  {"model": "properties.zonetype", "fields": {"name_ar": "منطقة سكنية", "name_fr": "Zone résidentielle"}},
+  {"model": "properties.zonetype", "fields": {"name_ar": "وسط المدينة", "name_fr": "Centre-ville"}},
+  {"model": "properties.zonetype", "fields": {"name_ar": "منطقة محيطة", "name_fr": "Zone périphérique"}},
+  {"model": "properties.zonetype", "fields": {"name_ar": "منطقة نائية", "name_fr": "Zone d'éloignement"}},
+
+  {"model": "properties.buildingnature", "fields": {"name_ar": "فردي", "name_fr": "Individuels"}},
+  {"model": "properties.buildingnature", "fields": {"name_ar": "جماعي وشبه جماعي", "name_fr": "Collectifs et Semi-Collectifs"}},
+  {"model": "properties.buildingnature", "fields": {"name_ar": "محلات تجارية ومحلات مهنية", "name_fr": "Locaux Commerciaux et Locaux à Usage Professionnels"}},
+  {"model": "properties.buildingnature", "fields": {"name_ar": "هنغارات", "name_fr": "Hangars"}},
+  {"model": "properties.buildingnature", "fields": {"name_ar": "أراضي فضاء", "name_fr": "Terrains Nus"}},
+  {"model": "properties.buildingnature", "fields": {"name_ar": "أراضي فلاحية (سهل)", "name_fr": "Terrains Agricoles en Plaine"}},
+  {"model": "properties.buildingnature", "fields": {"name_ar": "أراضي فلاحية (منحدر)", "name_fr": "Terrains Agricoles en Pente"}}
+]

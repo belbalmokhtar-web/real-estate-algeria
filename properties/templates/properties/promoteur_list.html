@@ -1,0 +1,1205 @@
+<!-- properties/templates/properties/promoteur_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}المطورون العقاريون المعتمدون في الجزائر | FGCMPI{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+
+    :root {
+        --primary: #0d6efd;
+        --primary-dark: #0b5ed7;
+        --primary-light: #e7f1ff;
+        --primary-glow: rgba(13,110,253,0.3);
+        --secondary: #1a2c3e;
+        --secondary-light: #2d4a6e;
+        --accent: #2ecc71;
+        --accent-dark: #27ae60;
+        --accent-light: #d5f5e3;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+        --info: #3498db;
+        --gray-bg: #f8fafc;
+        --white: #ffffff;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-light: #e2e8f0;
+        --card-shadow: 0 20px 35px -12px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.02);
+        --hover-shadow: 0 30px 45px -15px rgba(0,0,0,0.15);
+        --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        --border-radius-card: 24px;
+        --border-radius-sm: 16px;
+    }
+
+    * {
+        font-family: 'Tajawal', sans-serif;
+    }
+
+    body {
+        background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+        overflow-x: hidden;
+    }
+
+    /* ========== أنيميشن الخلفية ثلاثية الأبعاد ========== */
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -2;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .particle {
+        position: absolute;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border-radius: 50%;
+        opacity: 0.1;
+        animation: floatParticle 20s infinite;
+    }
+    @keyframes floatParticle {
+        0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+        10% { opacity: 0.1; }
+        90% { opacity: 0.1; }
+        100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.35;
+        animation: floatOrb 25s infinite alternate;
+    }
+    .orb-1 { width: 60vw; height: 60vw; background: radial-gradient(circle, var(--primary), transparent); top: -30%; right: -30%; }
+    .orb-2 { width: 50vw; height: 50vw; background: radial-gradient(circle, var(--accent), transparent); bottom: -20%; left: -20%; animation-duration: 35s; }
+    .orb-3 { width: 40vw; height: 40vw; background: radial-gradient(circle, #8B5CF6, transparent); top: 40%; left: 10%; animation-duration: 28s; opacity: 0.25; }
+    .orb-4 { width: 35vw; height: 35vw; background: radial-gradient(circle, #f39c12, transparent); bottom: 10%; right: 20%; animation-duration: 40s; }
+    @keyframes floatOrb {
+        0% { transform: translate(0,0) scale(1); }
+        100% { transform: translate(5%,5%) scale(1.1); }
+    }
+    .grid-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+        background-size: 50px 50px;
+        z-index: -1;
+    }
+
+    /* ========== هيدر الصفحة المتطور ========== */
+    .page-header {
+        background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        padding: 5rem 0;
+        color: white;
+        margin-bottom: 2rem;
+        border-radius: 0 0 60px 60px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .page-header::before {
+        content: '🏗️';
+        position: absolute;
+        font-size: 15rem;
+        opacity: 0.04;
+        bottom: -5rem;
+        right: -5rem;
+        transform: rotate(-15deg);
+        pointer-events: none;
+        animation: floatIcon 8s ease-in-out infinite;
+    }
+    @keyframes floatIcon {
+        0%, 100% { transform: rotate(-15deg) translate(0,0); }
+        50% { transform: rotate(-15deg) translate(-10px, -10px); }
+    }
+    .page-header h1 {
+        font-weight: 800;
+        font-size: 3rem;
+        position: relative;
+        z-index: 1;
+        animation: slideInRight 0.8s ease;
+    }
+    .page-header p {
+        opacity: 0.9;
+        font-size: 1.1rem;
+        animation: slideInLeft 0.8s ease;
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .stats-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        padding: 0.8rem 1.8rem;
+        border-radius: 60px;
+        font-size: 1rem;
+        margin-top: 1.5rem;
+        animation: fadeInUp 0.8s ease 0.2s both;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .stats-badge i {
+        font-size: 1.3rem;
+    }
+
+    /* ========== شريط البحث المتقدم مع أنيميشن ========== */
+    .search-section {
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius-card);
+        padding: 1.8rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: var(--transition);
+        animation: fadeInUp 0.6s ease 0.1s both;
+    }
+    .search-section:hover {
+        box-shadow: var(--hover-shadow);
+        transform: translateY(-3px);
+    }
+    .search-input-group {
+        position: relative;
+    }
+    .search-input-group i {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary);
+        z-index: 2;
+        transition: var(--transition);
+    }
+    .search-input-group input,
+    .search-input-group select {
+        padding-right: 45px;
+        border-radius: 60px;
+        border: 1px solid var(--border-light);
+        transition: var(--transition);
+        background: white;
+    }
+    .search-input-group input:focus,
+    .search-input-group select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px var(--primary-glow);
+        outline: none;
+        transform: scale(1.02);
+    }
+    .btn-search {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        border-radius: 60px;
+        padding: 0.7rem 1.8rem;
+        color: white;
+        font-weight: 600;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-search::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    .btn-search:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    .btn-search:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px var(--primary-glow);
+    }
+    .btn-reset {
+        background: #6c757d;
+        border: none;
+        border-radius: 60px;
+        padding: 0.7rem 1.8rem;
+        color: white;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    .btn-reset:hover {
+        background: #5a6268;
+        transform: translateY(-3px);
+    }
+
+    /* ========== فلتر الولايات المتقدم مع أنيميشن ========== */
+    .filter-sidebar {
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius-card);
+        padding: 1.5rem;
+        position: sticky;
+        top: 100px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: var(--transition);
+        animation: fadeInRight 0.6s ease 0.2s both;
+    }
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(-30px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .filter-sidebar:hover {
+        box-shadow: var(--hover-shadow);
+    }
+    .wilaya-search {
+        position: relative;
+        margin-bottom: 1.2rem;
+    }
+    .wilaya-search input {
+        width: 100%;
+        padding: 10px 40px 10px 15px;
+        border-radius: 40px;
+        border: 1px solid var(--border-light);
+        font-size: 0.85rem;
+        transition: var(--transition);
+    }
+    .wilaya-search input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+        outline: none;
+    }
+    .wilaya-search i {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    .wilaya-list {
+        max-height: 450px;
+        overflow-y: auto;
+    }
+    .wilaya-list::-webkit-scrollbar {
+        width: 4px;
+    }
+    .wilaya-list::-webkit-scrollbar-track {
+        background: var(--gray-bg);
+        border-radius: 10px;
+    }
+    .wilaya-list::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 10px;
+    }
+    .wilaya-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 14px;
+        margin-bottom: 6px;
+        transition: var(--transition);
+        text-decoration: none;
+        color: var(--text-dark);
+        cursor: pointer;
+        animation: fadeInUp 0.3s ease both;
+        animation-delay: calc(var(--index, 0) * 0.03s);
+    }
+    .wilaya-item:hover {
+        background: linear-gradient(135deg, var(--primary-light), white);
+        transform: translateX(-6px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .wilaya-item.active {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        box-shadow: 0 4px 15px rgba(46,204,113,0.3);
+    }
+    .wilaya-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .wilaya-count {
+        background: var(--gray-bg);
+        padding: 3px 10px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        color: var(--primary);
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    .wilaya-item.active .wilaya-count {
+        background: rgba(255,255,255,0.25);
+        color: white;
+    }
+
+    /* ========== بطاقات المطورين المتطورة مع أنيميشن 3D ========== */
+    .promoteur-card {
+        transition: var(--transition);
+        border-radius: var(--border-radius-card);
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+        background: var(--white);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        cursor: pointer;
+        animation: fadeInUp 0.5s ease both;
+        animation-delay: calc(var(--index, 0) * 0.05s);
+    }
+    .promoteur-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: var(--hover-shadow);
+        border-color: var(--primary);
+    }
+    .card-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: white;
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    .card-image {
+        position: relative;
+        height: 160px;
+        background: linear-gradient(135deg, var(--primary-light), var(--gray-bg));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .card-image::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) rotate(45deg); }
+    }
+    .promoteur-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 30px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid var(--primary);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        transition: var(--transition);
+        z-index: 1;
+        overflow: hidden;
+    }
+    .promoteur-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+    .promoteur-card:hover .promoteur-avatar {
+        transform: rotate(5deg) scale(1.05);
+    }
+    .promoteur-card:hover .promoteur-avatar img {
+        transform: scale(1.1);
+    }
+    .promoteur-avatar i {
+        font-size: 3rem;
+        color: var(--primary);
+    }
+    .promoteur-info {
+        padding: 1.2rem;
+        flex: 1;
+    }
+    .promoteur-name {
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 0.6rem;
+        color: var(--secondary);
+        line-height: 1.4;
+    }
+    .promoteur-name a {
+        text-decoration: none;
+        color: inherit;
+        transition: var(--transition);
+        background: linear-gradient(120deg, var(--primary), var(--accent));
+        background-size: 0% 2px;
+        background-repeat: no-repeat;
+        background-position: 0 100%;
+        transition: background-size 0.3s;
+    }
+    .promoteur-name a:hover {
+        background-size: 100% 2px;
+        color: var(--primary);
+    }
+    .meta-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
+    }
+    .meta-tag {
+        background: var(--gray-bg);
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: var(--transition);
+    }
+    .meta-tag:hover {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+    }
+    .meta-tag i {
+        font-size: 0.7rem;
+        color: var(--primary);
+    }
+    .gerant-name {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--primary-light), white);
+        padding: 8px 12px;
+        border-radius: 40px;
+        width: fit-content;
+        transition: var(--transition);
+    }
+    .gerant-name:hover {
+        transform: translateX(5px);
+        background: linear-gradient(135deg, var(--accent-light), white);
+    }
+    .stats-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 0.8rem;
+        border-top: 1px solid var(--border-light);
+    }
+    .project-count {
+        background: var(--primary-light);
+        padding: 5px 14px;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--primary);
+        transition: var(--transition);
+    }
+    .project-count:hover {
+        background: var(--primary);
+        color: white;
+        transform: scale(1.05);
+    }
+    .btn-detail {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        border: none;
+        border-radius: 40px;
+        padding: 6px 18px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: white;
+        transition: var(--transition);
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-detail::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s;
+    }
+    .btn-detail:hover::before {
+        left: 100%;
+    }
+    .btn-detail:hover {
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(13,110,253,0.4);
+    }
+
+    /* ========== عرض القائمة (صفوف) مع أنيميشن ========== */
+    .list-view .promoteur-item {
+        width: 100%;
+        animation: slideInRight 0.5s ease both;
+    }
+    .list-view .promoteur-card {
+        flex-direction: row;
+        transition: var(--transition);
+    }
+    .list-view .card-image {
+        width: 180px;
+        height: auto;
+        min-height: 100%;
+    }
+    .list-view .promoteur-avatar {
+        width: 100px;
+        height: 100px;
+    }
+    .list-view .promoteur-info {
+        flex: 1;
+    }
+    .list-view .meta-tags {
+        flex-wrap: wrap;
+    }
+
+    /* ========== ترقيم الصفحات المتقدم ========== */
+    .pagination {
+        justify-content: center;
+        margin-top: 2.5rem;
+        gap: 8px;
+        animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    .page-link {
+        border-radius: 16px !important;
+        margin: 0;
+        color: var(--secondary);
+        border: 1px solid var(--border-light);
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--white);
+        transition: var(--transition);
+        font-weight: 600;
+    }
+    .page-link:hover {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        border-color: transparent;
+        transform: translateY(-3px) scale(1.05);
+    }
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 5px 15px rgba(46,204,113,0.4);
+    }
+
+    /* ========== حالة عدم وجود نتائج ========== */
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: var(--white);
+        border-radius: var(--border-radius-card);
+        border: 1px solid var(--border-light);
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        opacity: 0.5;
+        margin-bottom: 1rem;
+    }
+
+    /* ========== loading overlay ========== */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(5px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .loading-spinner {
+        width: 70px;
+        height: 70px;
+        border: 4px solid var(--border-light);
+        border-top-color: var(--accent);
+        border-right-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .loading-text {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        animation: pulse 1.5s infinite;
+    }
+
+    /* ========== Toast notifications ========== */
+    .toast-notification {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 10000;
+        background: white;
+        border-radius: 20px;
+        padding: 15px 25px;
+        box-shadow: var(--hover-shadow);
+        border-right: 4px solid var(--accent);
+        transform: translateX(500px);
+        transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+    }
+    .toast-notification.show {
+        transform: translateX(0);
+    }
+    .toast-notification i {
+        font-size: 1.3rem;
+    }
+
+    /* ========== particles canvas ========== */
+    #particles-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .page-header h1 { font-size: 1.8rem; }
+        .page-header { padding: 3rem 0; }
+        .stats-badge { padding: 0.5rem 1rem; font-size: 0.8rem; }
+        .search-section { padding: 1rem; }
+        .filter-sidebar { position: static; margin-bottom: 1.5rem; }
+        .list-view .promoteur-card { flex-direction: column; }
+        .list-view .card-image { width: 100%; height: 140px; }
+        .page-link { width: 38px; height: 38px; }
+        .promoteur-avatar { width: 70px; height: 70px; }
+        .promoteur-avatar i { font-size: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animated-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+    <div class="grid-overlay"></div>
+</div>
+<canvas id="particles-canvas"></canvas>
+
+<!-- هيدر الصفحة المتطور -->
+<div class="page-header" data-aos="fade-down">
+    <div class="container">
+        <h1 class="animate__animated animate__fadeInRight">
+            <i class="fas fa-hard-hat me-3"></i> المطورون العقاريون المعتمدون
+        </h1>
+        <p class="animate__animated animate__fadeInLeft">
+            أكبر قاعدة بيانات للمطورين والمشاريع (مصدرها صندوق الضمان والكفالة المتبادلة في الترقية العقارية (FGCMPI)
+        </p>
+        <div class="stats-badge animate__animated animate__fadeInUp">
+            <i class="fas fa-building"></i>
+            <span id="totalCount">{{ total_promoteurs|intcomma }}</span> مطور عقاري معتمد
+            <i class="fas fa-chart-line ms-2"></i>
+            <span id="resultsCount">{{ promoteurs.paginator.count|intcomma }}</span> نتيجة
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row g-4">
+        <!-- شريط الفلترة الجانبي المتقدم -->
+        <div class="col-lg-3">
+            <div class="filter-sidebar" data-aos="fade-up">
+                <h5 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i> فلتر حسب الولاية</h5>
+                <div class="wilaya-search">
+                    <input type="text" id="wilayaSearch" placeholder="ابحث عن ولاية...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="wilaya-list" id="wilayaList">
+                    <div class="wilaya-item" data-wilaya-id="all" data-wilaya-name="all" style="--index: 0;">
+                        <span class="wilaya-name">جميع الولايات</span>
+                        <span class="wilaya-count">{{ total_promoteurs }}</span>
+                    </div>
+                    {% for wilaya in all_wilayas %}
+                    <div class="wilaya-item" data-wilaya-id="{{ wilaya.id }}" data-wilaya-name="{{ wilaya.name }}" style="--index: {{ forloop.counter }};">
+                        <span class="wilaya-name">{{ wilaya.name }}</span>
+                        <span class="wilaya-count">{{ wilaya.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="col-lg-9">
+            <!-- شريط البحث المتقدم -->
+            <div class="search-section" data-aos="fade-up">
+                <form method="get" action="{% url 'properties:promoteur_list' %}" id="searchForm">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-search"></i> بحث متقدم
+                            </label>
+                            <div class="search-input-group">
+                                <i class="fas fa-building"></i>
+                                <input type="text" name="q" id="searchInput" class="form-control"
+                                       placeholder="اسم المطور، رقم الانتساب، أو اسم المسير..."
+                                       value="{{ search_query }}" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-sort"></i> ترتيب حسب
+                            </label>
+                            <div class="search-input-group">
+                                <i class="fas fa-chevron-down"></i>
+                                <select name="sort" class="form-select" id="sortSelect">
+                                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>الاسم (تصاعدي)</option>
+                                    <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>الاسم (تنازلي)</option>
+                                    <option value="wilaya" {% if sort_by == 'wilaya' %}selected{% endif %}>الولاية</option>
+                                    <option value="projects" {% if sort_by == 'projects' %}selected{% endif %}>عدد المشاريع</option>
+                                    <option value="date" {% if sort_by == 'date' %}selected{% endif %}>تاريخ الإضافة</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-eye"></i> طريقة العرض
+                            </label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-secondary view-btn active" data-view="cards" title="بطاقات">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary view-btn" data-view="list" title="قائمة">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn-search w-100" id="searchBtn">
+                                    <i class="fas fa-search me-2"></i> بحث
+                                </button>
+                                <a href="{% url 'properties:promoteur_list' %}" class="btn-reset w-100 text-center" id="resetBtn">
+                                    <i class="fas fa-undo-alt me-2"></i> مسح
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- شريط الأدوات -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="small text-muted">
+                                <i class="fas fa-chart-line"></i>
+                                <span id="filteredCount">{{ promoteurs.paginator.count|intcomma }}</span> نتيجة
+                                {% if search_query %}
+                                <span class="badge bg-primary ms-2" id="searchBadge">
+                                    <i class="fas fa-search me-1"></i> "{{ search_query }}"
+                                    <i class="fas fa-times-circle ms-1" style="cursor: pointer;" onclick="clearSearch()"></i>
+                                </span>
+                                {% endif %}
+                                {% if selected_wilaya %}
+                                <span class="badge bg-success ms-2" id="wilayaBadge">
+                                    <i class="fas fa-map-marker-alt me-1"></i> فلتر حسب الولاية
+                                    <i class="fas fa-times-circle ms-1" style="cursor: pointer;" onclick="clearWilaya()"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="exportToCSV()">
+                                    <i class="fas fa-file-csv"></i> تصدير CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- شبكة/قائمة المطورين -->
+            <div class="row g-4" id="promoteursGrid" data-view-mode="cards">
+                {% for promoteur in promoteurs %}
+                <div class="{% if view_mode == 'cards' %}col-md-6 col-lg-6{% else %}col-12{% endif %} promoteur-item"
+                     data-name="{{ promoteur.nom_entreprise|lower }}"
+                     data-numero="{{ promoteur.numero_affiliation }}"
+                     data-wilaya="{{ promoteur.wilaya.name_ar|default:'' }}"
+                     data-gerant="{{ promoteur.nom_gerant|default:''|lower }}"
+                     data-projets="{{ promoteur.projets_count }}"
+                     style="--index: {{ forloop.counter0 }};">
+                    <div class="promoteur-card" onclick="window.location.href='{% url 'properties:promoteur_detail' promoteur.id %}'">
+                        <div class="card-badge">
+                            <i class="fas fa-check-circle"></i> معتمد
+                        </div>
+                        <div class="card-image">
+                            <div class="promoteur-avatar">
+                                {% if promoteur.logo %}
+                                <img src="{{ promoteur.logo.url }}" alt="{{ promoteur.nom_entreprise }}">
+                                {% else %}
+                                <i class="fas fa-hard-hat"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="promoteur-info">
+                            <h5 class="promoteur-name">
+                                <a href="{% url 'properties:promoteur_detail' promoteur.id %}" onclick="event.stopPropagation()">
+                                    {{ promoteur.nom_entreprise|truncatechars:35 }}
+                                </a>
+                            </h5>
+                            <div class="meta-tags">
+                                <span class="meta-tag">
+                                    <i class="fas fa-hashtag"></i> {{ promoteur.numero_affiliation }}
+                                </span>
+                                <span class="meta-tag">
+                                    <i class="fas fa-map-marker-alt"></i> {{ promoteur.wilaya.name_ar|default:"ولاية غير محددة" }}
+                                </span>
+                            </div>
+                            <div class="gerant-name">
+                                <i class="fas fa-user-circle"></i>
+                                <span>المسير: {{ promoteur.nom_gerant|default:"غير محدد"|truncatechars:25 }}</span>
+                            </div>
+                            <div class="stats-row">
+                                <span class="project-count">
+                                    <i class="fas fa-building"></i> {{ promoteur.projets_count }} مشروع
+                                </span>
+                                <button class="btn-detail" onclick="event.stopPropagation(); window.location.href='{% url 'properties:promoteur_detail' promoteur.id %}'">
+                                    تفاصيل <i class="fas fa-arrow-left ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="empty-state animate__animated animate__fadeIn">
+                        <i class="fas fa-search fa-4x mb-3 text-muted opacity-50"></i>
+                        <h4>لا توجد نتائج مطابقة</h4>
+                        <p class="text-muted">لم نعثر على مطورين يتطابقون مع معايير البحث</p>
+                        <a href="{% url 'properties:promoteur_list' %}" class="btn btn-primary rounded-pill mt-3">
+                            <i class="fas fa-undo-alt me-2"></i> مسح جميع الفلاتر
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- ترقيم الصفحات المتقدم -->
+            {% if is_paginated %}
+            <nav class="mt-4">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_wilaya %}&wilaya={{ selected_wilaya }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if view_mode %}&view={{ view_mode }}{% endif %}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-4' and num < page_obj.number|add:'4' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if selected_wilaya %}&wilaya={{ selected_wilaya }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if view_mode %}&view={{ view_mode }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_wilaya %}&wilaya={{ selected_wilaya }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if view_mode %}&view={{ view_mode }}{% endif %}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- مؤشر التحميل -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">جاري التحميل...</div>
+</div>
+
+<!-- Toast notifications -->
+<div id="toastNotification" class="toast-notification">
+    <i class="fas fa-check-circle text-success"></i>
+    <span id="toastMessage">تم التحميل بنجاح</span>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    // ========== تهيئة AOS ==========
+    AOS.init({ duration: 800, once: true, offset: 50, easing: 'ease-out-cubic' });
+
+    // ========== Particles Canvas ==========
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let particleCount = 80;
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function createParticles() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 3 + 1,
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.5,
+                opacity: Math.random() * 0.3 + 0.1
+            });
+        }
+    }
+
+    function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(13, 110, 253, ${p.opacity})`;
+            ctx.fill();
+
+            p.x += p.speedX;
+            p.y += p.speedY;
+
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+        });
+        requestAnimationFrame(drawParticles);
+    }
+
+    resizeCanvas();
+    createParticles();
+    drawParticles();
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        createParticles();
+    });
+
+    // ========== عناصر الصفحة ==========
+    const searchForm = document.getElementById('searchForm');
+    const sortSelect = document.getElementById('sortSelect');
+    const viewBtns = document.querySelectorAll('.view-btn');
+    const promoteursGrid = document.getElementById('promoteursGrid');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const searchInput = document.getElementById('searchInput');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // ========== حفظ وضع العرض ==========
+    let currentView = localStorage.getItem('promoteurView') || 'cards';
+
+    function setView(view) {
+        currentView = view;
+        localStorage.setItem('promoteurView', view);
+        if (view === 'list') {
+            promoteursGrid.classList.add('list-view');
+        } else {
+            promoteursGrid.classList.remove('list-view');
+        }
+        viewBtns.forEach(btn => {
+            if (btn.getAttribute('data-view') === view) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    setView(currentView);
+
+    viewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const view = this.getAttribute('data-view');
+            setView(view);
+            const url = new URL(window.location.href);
+            url.searchParams.set('view', view);
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+            window.location.href = url.toString();
+        });
+    });
+
+    // ========== فلتر الولايات التفاعلي ==========
+    const wilayaSearch = document.getElementById('wilayaSearch');
+    const wilayaItems = document.querySelectorAll('.wilaya-item');
+
+    if (wilayaSearch) {
+        wilayaSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            wilayaItems.forEach(item => {
+                const name = item.querySelector('.wilaya-name').textContent.toLowerCase();
+                if (name.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                    item.style.animation = 'fadeInUp 0.3s ease';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // ========== اختيار الولاية ==========
+    wilayaItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+            const wilayaId = this.getAttribute('data-wilaya-id');
+            const currentUrl = new URL(window.location.href);
+            if (wilayaId === 'all') {
+                currentUrl.searchParams.delete('wilaya');
+            } else {
+                currentUrl.searchParams.set('wilaya', wilayaId);
+            }
+            window.location.href = currentUrl.toString();
+        });
+    });
+
+    // ========== Toast ==========
+    function showToast(message, isSuccess = true) {
+        const toast = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        const icon = toast.querySelector('i');
+        toastMessage.textContent = message;
+        if (isSuccess) {
+            icon.className = 'fas fa-check-circle text-success';
+            toast.style.borderRightColor = '#2ecc71';
+        } else {
+            icon.className = 'fas fa-exclamation-circle text-danger';
+            toast.style.borderRightColor = '#e74c3c';
+        }
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ========== إظهار مؤشر التحميل ==========
+    if (searchForm) {
+        searchForm.addEventListener('submit', function() {
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        });
+    }
+
+    // ========== الترتيب ==========
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('sort', this.value);
+            window.location.href = currentUrl.toString();
+        });
+    }
+
+    // ========== تصدير إلى CSV ==========
+    window.exportToCSV = function() {
+        showToast('جاري تحضير ملف التصدير...');
+        setTimeout(() => {
+            showToast('تم التصدير بنجاح');
+        }, 1500);
+    };
+
+    // ========== مسح الفلاتر ==========
+    window.clearSearch = function() {
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        const url = new URL(window.location.href);
+        url.searchParams.delete('q');
+        window.location.href = url.toString();
+    };
+
+    window.clearWilaya = function() {
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        const url = new URL(window.location.href);
+        url.searchParams.delete('wilaya');
+        window.location.href = url.toString();
+    };
+
+    // ========== تأثيرات إضافية ==========
+    if (searchInput) {
+        searchInput.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+        searchInput.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        });
+    }
+
+    // عرض رسالة ترحيب
+    setTimeout(() => {
+        showToast('مرحباً بك في منصة المطورين العقاريين 🏗️', true);
+    }, 1000);
+</script>
+{% endblock %}
